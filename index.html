@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ascend — Scale Smarter, Not Harder</title>
+<meta name="description" content="Ascend unifies workflows, live analytics, and lead management into one revenue command center." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.143.0/build/three.module.js",
+    "three/examples/jsm/": "https://unpkg.com/three@0.143.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+:root{
+  --bg:#04060f; --bg-2:#060a18; --ink:#f3f6ff; --muted:#9aa6c4; --muted-2:#6b7796;
+  --line:rgba(150,175,230,.12); --line-strong:rgba(150,175,230,.22);
+  --accent:#5df0a8; --accent-2:#2fd38a; --accent-ink:#032018;
+  --glass:rgba(12,18,38,.55); --glass-2:rgba(16,24,48,.65);
+  --radius:18px; --radius-lg:26px; --maxw:1180px;
+  --shadow:0 30px 80px -30px rgba(0,0,0,.75);
+  --font:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto !important}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-stopped{overflow:hidden}
+[data-reveal]{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.22,.7,.2,1),transform .7s cubic-bezier(.22,.7,.2,1);transition-delay:var(--rd,0ms);will-change:opacity,transform}
+[data-reveal].in{opacity:1;transform:none !important}
+.scroll-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:100;pointer-events:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 12px var(--accent);transform-origin:0 50%;transform:scaleX(0)}
+.feature-grid > [data-reveal]:nth-child(odd),.suite-grid > [data-reveal]:nth-child(odd){transform:translateX(-50px)}
+.feature-grid > [data-reveal]:nth-child(even),.suite-grid > [data-reveal]:nth-child(even){transform:translateX(50px)}
+.reserve-form[data-reveal]{transform:scale(.94)}
+.hero-inner,.dashboard,.cta-card{will-change:translate}
+#dunes{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:0;pointer-events:none;opacity:0}
+.planet-canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:0;pointer-events:none}
+.page{position:relative;z-index:1}
+.section{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:clamp(80px,12vw,160px) 24px;overflow-x:clip}
+.eyebrow{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.section-head{max-width:680px;margin:0 auto clamp(48px,6vw,80px);text-align:center}
+.section-head h2,.showcase-copy h2,.cta-card h2{font-size:clamp(30px,4.4vw,50px);font-weight:800;line-height:1.05;letter-spacing:-.02em;text-shadow:0 2px 40px rgba(0,0,0,.6)}
+.section-head p{margin-top:18px;color:#c9d3ea;font-size:18px;line-height:1.65;text-shadow:0 1px 14px rgba(4,6,15,.85),0 0 2px rgba(4,6,15,.6)}
+.section{background:radial-gradient(70% 60% at 50% 50%,rgba(4,6,15,.42) 0%,rgba(4,6,15,.18) 55%,transparent 80%)}
+.section-head h2,.showcase-copy h2,.cta-card h2{text-shadow:0 2px 18px rgba(4,6,15,.85)}
+.btn{display:inline-flex;align-items:center;gap:9px;font-size:15px;font-weight:600;padding:13px 22px;border-radius:999px;border:1px solid transparent;cursor:pointer;transition:transform .18s ease,box-shadow .25s ease,background .2s ease,border-color .2s ease;white-space:nowrap}
+.btn svg{width:17px;height:17px}
+.btn-primary{color:var(--accent-ink);background:linear-gradient(180deg,var(--accent),var(--accent-2));box-shadow:0 10px 30px -8px rgba(93,240,168,.55),inset 0 1px 0 rgba(255,255,255,.4)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 38px -8px rgba(93,240,168,.7)}
+.btn-outline{color:var(--ink);background:rgba(255,255,255,.04);border-color:var(--line-strong);backdrop-filter:blur(10px)}
+.btn-outline:hover{background:rgba(255,255,255,.09);transform:translateY(-2px)}
+.btn-ghost{color:var(--ink);background:rgba(255,255,255,.05);border-color:var(--line-strong);padding:9px 18px}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.ico{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* HERO */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;background:radial-gradient(125% 62% at 50% -10%,rgba(4,6,15,.82) 0%,rgba(4,6,15,.28) 44%,transparent 68%)}
+.nav{width:100%;max-width:var(--maxw);margin:0 auto;padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:.16em}
+.brand-mark{color:var(--accent);font-size:14px;transform:translateY(-1px)}
+.nav-links{display:flex;gap:30px;font-size:14.5px;color:var(--muted)}
+.nav-links a:hover{color:var(--ink)}
+.hero-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px;transform:translateY(-10vh)}
+.hero-title{font-size:clamp(34px,5.2vw,62px);font-weight:800;line-height:1.04;letter-spacing:-.03em;max-width:15ch;text-shadow:0 2px 50px rgba(0,0,0,.55)}
+.hero-title em{font-style:normal;background:linear-gradient(180deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-sub{margin-top:24px;max-width:560px;font-size:clamp(16px,2vw,19px);line-height:1.6;color:var(--muted)}
+.hero-actions{margin-top:38px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.logos{padding:0 24px clamp(36px,6vw,64px);text-align:center}
+.logos-label{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+.logos-row{margin-top:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(24px,5vw,56px)}
+.logo{font-size:17px;font-weight:700;color:var(--muted-2);opacity:.8;transition:color .2s,opacity .2s}
+.logo:hover{color:var(--ink);opacity:1}
+
+/* FEATURES */
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{position:relative;overflow:hidden;padding:30px;border-radius:var(--radius);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px);transition:transform .35s ease,border-color .35s ease,background .35s ease}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 120% at 0% 0%,rgba(93,240,168,.08),transparent 45%);opacity:0;transition:opacity .35s ease;pointer-events:none}
+.card:hover{transform:translateY(-4px);border-color:var(--line-strong);background:var(--glass-2)}
+.card:hover::before{opacity:1}
+.card-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--accent);background:rgba(93,240,168,.1);border:1px solid rgba(93,240,168,.18);margin-bottom:20px}
+.card-icon .ico{width:22px;height:22px}
+.card h3{font-size:19px;font-weight:700;margin-bottom:10px}
+.card p{font-size:15px;line-height:1.6;color:var(--muted)}
+
+/* SHOWCASE */
+.showcase-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(36px,6vw,72px);align-items:center}
+.showcase-copy .eyebrow{margin-bottom:18px}
+.showcase-copy p{margin-top:20px;color:var(--muted);font-size:17px;line-height:1.65;text-shadow:0 1px 24px rgba(0,0,0,.55)}
+.showcase-copy .btn{margin-top:32px}
+.dashboard{position:relative;padding:24px;border-radius:var(--radius-lg);background:var(--glass-2);border:1px solid var(--line-strong);box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.dashboard::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(160deg,rgba(93,240,168,.35),transparent 40%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.dash-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.dash-top strong{font-size:15px;font-weight:700}
+.dash-live{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--accent);letter-spacing:.08em;text-transform:uppercase}
+.dash-live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.dash-bars{display:flex;align-items:flex-end;gap:10px;height:150px;padding:16px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--line);margin-bottom:22px}
+.dash-bar{flex:1;height:var(--h);border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,var(--accent),rgba(47,211,138,.25));transform-origin:bottom;animation:grow .9s cubic-bezier(.22,.7,.2,1) both;animation-delay:calc(var(--i) * 90ms)}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.dash-rows{display:grid;gap:14px}
+.dash-row{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:14px;font-size:13.5px;color:var(--muted)}
+.dash-track{height:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+.dash-fill{height:100%;width:var(--w);border-radius:999px;background:linear-gradient(90deg,var(--accent-2),var(--accent));animation:fill .3s ease-out both}
+@keyframes fill{from{width:0}to{width:var(--w)}}
+
+.stats{margin-top:clamp(56px,8vw,96px);display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.stat{text-align:center;padding:30px 18px;border-radius:var(--radius);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(12px)}
+.stat-value{font-size:clamp(30px,4vw,44px);font-weight:800;background:linear-gradient(180deg,#fff,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat-label{margin-top:8px;font-size:14px;color:var(--muted)}
+
+.suite-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.suite{display:flex;flex-direction:column;align-items:flex-start;padding:36px}
+.suite-top{display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:22px}
+.badge{font-size:12px;padding:5px 12px;border-radius:999px;color:#d2b48c;background:rgba(210,180,140,.14);border:1px solid rgba(210,180,140,.3)}
+.price{font-size:14px;letter-spacing:.08em;color:var(--accent)}
+.suite h3{font-size:24px;margin-bottom:10px}
+.suite p{margin-bottom:24px}
+.contact-row{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
+.contact-item{padding:18px 28px;border-radius:var(--radius);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(12px);font-size:15px;color:var(--ink)}
+
+.reserve-form{display:grid;grid-template-columns:1fr 1fr;gap:18px 20px;padding:36px;max-width:820px;margin:0 auto}
+.field{display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--muted);letter-spacing:.02em}
+.field.wide{grid-column:1 / -1}
+.field input,.field select{font:inherit;font-size:15px;color:var(--ink);background:rgba(4,6,15,.55);border:1px solid var(--line-strong);border-radius:12px;padding:12px 14px;outline:none;transition:border-color .2s,box-shadow .2s;color-scheme:dark}
+.field select option{background:#0c1226;color:var(--ink)}
+.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(93,240,168,.18)}
+.form-foot{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.form-status{font-size:14px;line-height:1.5;color:var(--muted);flex:1;min-width:200px}
+.form-status.ok{color:var(--accent)}
+.form-status.err{color:#ffb4a8}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+@media (max-width:560px){.reserve-form{grid-template-columns:1fr;padding:26px 20px}}
+
+/* CTA + FOOTER */
+.cta{padding-bottom:0}
+.cta-card{max-width:760px;margin:0 auto;text-align:center;padding:clamp(48px,7vw,80px) clamp(28px,5vw,64px);border-radius:var(--radius-lg);background:radial-gradient(120% 140% at 50% 0%,rgba(93,240,168,.12),transparent 55%),var(--glass-2);border:1px solid var(--line-strong);box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.cta-card p{margin:20px auto 0;max-width:520px;color:var(--muted);font-size:17px;line-height:1.65}
+.cta-card .hero-actions{margin-top:36px}
+.footer{max-width:var(--maxw);margin:clamp(64px,9vw,110px) auto 0;padding:48px 24px 0;display:flex;justify-content:space-between;gap:48px;flex-wrap:wrap;border-top:1px solid var(--line)}
+.footer-brand p{margin-top:12px;color:var(--muted);font-size:14px;max-width:280px;line-height:1.6}
+.footer-cols{display:flex;gap:64px;flex-wrap:wrap}
+.footer-col h4{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);margin-bottom:14px;font-weight:600}
+.footer-col a{display:block;font-size:14.5px;color:var(--muted);margin-bottom:10px}
+.footer-col a:hover{color:var(--ink)}
+.copyright{text-align:center;margin:56px auto 0;padding-bottom:40px;font-size:13px;color:var(--muted-2)}
+
+/* RESPONSIVE */
+@media (max-width:980px){
+  .feature-grid{grid-template-columns:repeat(2,1fr)}
+  .showcase-grid{grid-template-columns:1fr;text-align:center}
+  .showcase-copy .btn{margin-left:auto;margin-right:auto}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .suite-grid{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .nav-links{display:none}
+  .nav{padding:18px 20px}
+  .section{padding:clamp(64px,16vw,110px) 20px}
+}
+@media (max-width:560px){
+  .feature-grid{grid-template-columns:1fr}
+  .dash-row{grid-template-columns:90px 1fr}
+  .hero-actions .btn{width:100%;flex:1;justify-content:center}
+  .cta-card{padding:40px 22px}
+  .footer-cols{gap:40px}
+}
+@media (max-width:380px){
+  .stats{grid-template-columns:1fr}
+  .logo{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  [data-reveal]{opacity:1;transform:none;transition:none}
+  .dash-bar,.dash-fill{animation:none}
+  .card,.btn{transition:none}
+  .feature-grid > [data-reveal],.suite-grid > [data-reveal],.reserve-form[data-reveal]{transform:none}
+  .scroll-progress{display:none}
+}
+</style>
+</head>
+<body>
+<canvas class="planet-canvas" id="planet"></canvas>
+<canvas id="dunes" aria-hidden="true"></canvas>
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<div class="page" id="top">
+
+  <header class="hero">
+    <nav class="nav">
+      <a class="brand" href="#top"><span class="brand-mark">▲</span>Ascend</a>
+      <div class="nav-links">
+        <a href="#sanctuary">Sanctuary</a>
+        <a href="#suites">Suites</a>
+        <a href="#features">Features</a>
+        <a href="#contact">Reservations</a>
+      </div>
+      <a class="btn btn-ghost" href="#cta">Sign Up</a>
+    </nav>
+
+    <div class="hero-inner" data-parallax="-0.12">
+      <h1 class="hero-title" data-reveal style="--rd:60ms">Scale Smarter,<br>Not <em>Harder</em></h1>
+      <p class="hero-sub" data-reveal style="--rd:180ms">Drive your funnel forward with clever workflows, analytics, and seamless lead management — all in one immersive command center.</p>
+      <div class="hero-actions" data-reveal style="--rd:300ms">
+        <a class="btn btn-primary" href="#cta">Start Free Right Now
+          <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+        <a class="btn btn-outline" href="#cta">Schedule a Consult</a>
+      </div>
+    </div>
+
+    <div class="logos" data-reveal style="--rd:420ms">
+      <div class="logos-label">Trusted by fast-moving teams</div>
+      <div class="logos-row">
+        <span class="logo">Nimbus</span>
+        <span class="logo">Pluma</span>
+        <span class="logo">Citrus</span>
+        <span class="logo">Spider</span>
+        <span class="logo">Helod</span>
+        <span class="logo">Vertx</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="section features" id="features">
+    <div class="section-head">
+      <span class="eyebrow" data-reveal>Everything in orbit</span>
+      <h2 data-reveal style="--rd:80ms">One platform to run the entire revenue engine</h2>
+      <p data-reveal style="--rd:160ms">Stop stitching tools together. Ascend unifies capture, automation, and insight into a single surface your whole team actually enjoys using.</p>
+    </div>
+    <div class="feature-grid">
+      <article class="card" data-reveal style="--rd:0ms">
+        <div class="card-icon"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M6 9v3a3 3 0 0 0 3 3h3"/></svg></div>
+        <h3>Clever workflows</h3>
+        <p>Automate every hand-off with visual, branching pipelines that move deals forward while you sleep.</p>
+      </article>
+      <article class="card" data-reveal style="--rd:90ms">
+        <div class="card-icon"><svg class="ico" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-4"/><path d="M13 16V8"/><path d="M18 16v-7"/></svg></div>
+        <h3>Live analytics</h3>
+        <p>Real-time dashboards turn raw funnel data into the one number that tells you what to do next.</p>
+      </article>
+      <article class="card" data-reveal style="--rd:180ms">
+        <div class="card-icon"><svg class="ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3>Seamless leads</h3>
+        <p>Capture, score, and route every lead automatically — no spreadsheet, no leak, no lag.</p>
+      </article>
+      <article class="card" data-reveal style="--rd:270ms">
+        <div class="card-icon"><svg class="ico" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg></div>
+        <h3>Instant triggers</h3>
+        <p>Fire actions across your stack the moment intent appears, in milliseconds not minutes.</p>
+      </article>
+      <article class="card" data-reveal style="--rd:360ms">
+        <div class="card-icon"><svg class="ico" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>Enterprise-grade</h3>
+        <p>SOC 2, SSO, and granular roles baked in — security that scales quietly with your team.</p>
+      </article>
+      <article class="card" data-reveal style="--rd:450ms">
+        <div class="card-icon"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></svg></div>
+        <h3>Global by default</h3>
+        <p>Multi-region, multi-currency, and low-latency everywhere your customers happen to be.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="sanctuary" data-scene="dawn">
+    <div class="section-head">
+      <span class="eyebrow" data-reveal>Bay-Beach Inn · Virginia Beach</span>
+      <h2 data-reveal style="--rd:80ms">A Bohemian Coastal Haven</h2>
+      <p data-reveal style="--rd:160ms">Crafted for travelers seeking tranquility, soulful architecture, and immersive nature.</p>
+    </div>
+    <div class="feature-grid">
+      <article class="card" data-reveal style="--rd:0ms">
+        <h3>Tidal Sanctuary</h3>
+        <p>Direct access to pristine bay waters, gentle morning tides, and uncrowded shorelines designed for deep reflection.</p>
+      </article>
+      <article class="card" data-reveal style="--rd:90ms">
+        <h3>First Landing Roots</h3>
+        <p>Imbued with the historic spirit of exploration. Wake up surrounded by maritime forests and coastal dunes.</p>
+      </article>
+      <article class="card" data-reveal style="--rd:180ms">
+        <h3>Soulful Living</h3>
+        <p>Warm banana cream accents, soft ambient shadows, and organic textures that ground your senses throughout your stay.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="suites" data-scene="golden">
+    <div class="section-head">
+      <span class="eyebrow" data-reveal>Accommodations</span>
+      <h2 data-reveal style="--rd:80ms">Curated Suites &amp; Rooms</h2>
+      <p data-reveal style="--rd:160ms">Each space is designed with minimalist elegance, panoramic bay views, and handcrafted organic finishes.</p>
+    </div>
+    <div class="suite-grid">
+      <article class="card suite" data-reveal style="--rd:0ms">
+        <div class="suite-top">
+          <span class="badge">Signature Suite</span>
+          <span class="price">$420 / night</span>
+        </div>
+        <h3>The Dolphin Horizon Suite</h3>
+        <p>Floor-to-ceiling windows overlooking the bay with private balcony access.</p>
+        <a class="btn btn-primary" href="#reserve" data-suite="Dolphin Horizon Suite">Reserve Suite</a>
+      </article>
+      <article class="card suite" data-reveal style="--rd:120ms">
+        <div class="suite-top">
+          <span class="badge">Bohemian Loft</span>
+          <span class="price">$310 / night</span>
+        </div>
+        <h3>The Lighthouse Loft</h3>
+        <p>Cozy aesthetic retreat featuring warm ambient lighting and rustic custom woodwork.</p>
+        <a class="btn btn-primary" href="#reserve" data-suite="Lighthouse Loft">Reserve Loft</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="reserve" data-scene="night">
+    <div class="section-head">
+      <span class="eyebrow" data-reveal>Reserve</span>
+      <h2 data-reveal style="--rd:80ms">Request your stay</h2>
+      <p data-reveal style="--rd:160ms">Choose your dates. The concierge confirms each request. No payment is taken on this page.</p>
+    </div>
+    <form class="reserve-form card" id="reserve-form" novalidate data-reveal style="--rd:200ms">
+      <label class="field wide">
+        <span>Suite</span>
+        <select name="suite" id="suite-select">
+          <option value="Dolphin Horizon Suite">The Dolphin Horizon Suite — $420 / night</option>
+          <option value="Lighthouse Loft">The Lighthouse Loft — $310 / night</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Check-in</span>
+        <input type="date" name="check_in" id="check-in" required />
+      </label>
+      <label class="field">
+        <span>Check-out</span>
+        <input type="date" name="check_out" id="check-out" required />
+      </label>
+      <label class="field">
+        <span>Guests</span>
+        <select name="guests">
+          <option value="1">1 guest</option>
+          <option value="2" selected>2 guests</option>
+          <option value="3">3 guests</option>
+          <option value="4">4 guests</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Full name</span>
+        <input type="text" name="guest_name" maxlength="120" required autocomplete="name" />
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" maxlength="200" required autocomplete="email" />
+      </label>
+      <label class="field wide">
+        <span>Phone (optional)</span>
+        <input type="tel" name="phone" maxlength="40" autocomplete="tel" />
+      </label>
+      <div class="form-foot wide">
+        <p class="form-status" id="form-status" role="status"></p>
+        <button class="btn btn-primary" type="submit" id="submit-btn">Request reservation</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="section showcase" id="solutions">
+    <div class="showcase-grid">
+      <div class="showcase-copy">
+        <span class="eyebrow" data-reveal>Built for momentum</span>
+        <h2 data-reveal style="--rd:90ms">See the whole funnel move in real time</h2>
+        <p data-reveal style="--rd:180ms">Every stage, every signal, every dollar — rendered live. Ascend gives operators the altitude to spot what’s working and the controls to double down instantly.</p>
+        <a class="btn btn-primary" data-reveal style="--rd:270ms" href="#cta">Explore the platform
+          <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="dashboard" data-reveal data-parallax="-0.06" style="--rd:160ms">
+        <div class="dash-top">
+          <strong>Pipeline · Q3</strong>
+          <span class="dash-live">Live</span>
+        </div>
+        <div class="dash-bars">
+          <div class="dash-bar" style="--h:62%;--i:0"></div>
+          <div class="dash-bar" style="--h:88%;--i:1"></div>
+          <div class="dash-bar" style="--h:47%;--i:2"></div>
+          <div class="dash-bar" style="--h:95%;--i:3"></div>
+          <div class="dash-bar" style="--h:71%;--i:4"></div>
+          <div class="dash-bar" style="--h:80%;--i:5"></div>
+          <div class="dash-bar" style="--h:58%;--i:6"></div>
+        </div>
+        <div class="dash-rows">
+          <div class="dash-row"><span>New leads</span><div class="dash-track"><div class="dash-fill" style="--w:90%"></div></div></div>
+          <div class="dash-row"><span>Qualified</span><div class="dash-track"><div class="dash-fill" style="--w:72%"></div></div></div>
+          <div class="dash-row"><span>In negotiation</span><div class="dash-track"><div class="dash-fill" style="--w:48%"></div></div></div>
+          <div class="dash-row"><span>Closed won</span><div class="dash-track"><div class="dash-fill" style="--w:34%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat" data-reveal style="--rd:0ms"><div class="stat-value">3.4×</div><div class="stat-label">Faster pipeline velocity</div></div>
+      <div class="stat" data-reveal style="--rd:80ms"><div class="stat-value">92%</div><div class="stat-label">Lead capture accuracy</div></div>
+      <div class="stat" data-reveal style="--rd:160ms"><div class="stat-value">11k+</div><div class="stat-label">Teams scaling on Ascend</div></div>
+      <div class="stat" data-reveal style="--rd:240ms"><div class="stat-value">$2.1B</div><div class="stat-label">Revenue influenced</div></div>
+    </div>
+  </section>
+
+  <section class="section" id="contact">
+    <div class="section-head">
+      <span class="eyebrow" data-reveal>Reservations</span>
+      <h2 data-reveal style="--rd:80ms">Begin Your Journey</h2>
+      <p data-reveal style="--rd:160ms">Connect with our concierge team to secure your reservation at Bay-Beach Inn, Virginia Beach.</p>
+    </div>
+    <div class="contact-row">
+      <div class="contact-item" data-reveal style="--rd:0ms">+1 (757) 555-BAYB</div>
+      <div class="contact-item" data-reveal style="--rd:100ms">concierge@baybeachinn.com</div>
+    </div>
+  </section>
+
+  <section class="section cta" id="cta">
+    <div class="cta-card" data-reveal data-parallax="-0.05" style="--rd:60ms">
+      <span class="eyebrow" data-reveal style="--rd:60ms">Ready when you are</span>
+      <h2 data-reveal style="--rd:140ms">Put your growth on a new trajectory</h2>
+      <p data-reveal style="--rd:220ms">Launch in minutes. No credit card. Cancel anytime. Join thousands of teams compounding revenue on Ascend.</p>
+      <div class="hero-actions" data-reveal style="--rd:300ms">
+        <a class="btn btn-primary" href="#cta">Start Free Right Now
+          <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+        <a class="btn btn-outline" href="#cta">Talk to Sales</a>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-brand">
+        <a class="brand" href="#top"><span class="brand-mark">▲</span>Ascend</a>
+        <p>The revenue command center for ambitious teams.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col"><h4>Product</h4><a href="#features">Features</a><a href="#solutions">Solutions</a><a href="#cta">Plans</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="#top">About</a><a href="#top">Careers</a><a href="#top">Blog</a></div>
+        <div class="footer-col"><h4>Legal</h4><a href="#top">Privacy</a><a href="#top">Terms</a><a href="#top">Security</a></div>
+      </div>
+    </footer>
+
+    <p class="copyright">© <span id="year"></span> Ascend, Inc. — Built among the stars.</p>
+  </section>
+
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
+import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import Lenis from 'https://unpkg.com/lenis@1.3.23/dist/lenis.mjs';
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
+document.querySelectorAll('[data-reveal]').forEach((el) => {
+  if (reduced) el.classList.add('in'); else io.observe(el);
+});
+
+if (!reduced) {
+  const lenis = new Lenis({ duration: 1.15, smoothWheel: true, touchMultiplier: 1.5 });
+  const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
+  requestAnimationFrame(raf);
+}
+
+const ASSET_BASE = 'https://api.getlayers.ai/storage/v1/object/public/public/assets/ascend-d9857ad1f2';
+const PLANET_GLB = `${ASSET_BASE}/planet.glb`;
+const PLANET_LIGHTS_GLB = `${ASSET_BASE}/planet-lights.glb`;
+const PLANET_CLOUDS_PNG = `${ASSET_BASE}/planet-clouds.png`;
+
+const CONFIG = {
+  rimColor:'#c1faff', rimPower:2.4, nightLights:10, terrainDepth:0.33, terrainShade:1.3,
+  oceanGlint:0.45, oceanDeep:0.12, oceanFlow:3, oceanFlowSpeed:0.8, oceanFlowScale:2.1,
+  glowColor:'#3a6cff', glowIntensity:3.35, planetRadius:1.95, spin:0.03, initRotation:2.07,
+  tilt:0.37, autoRotate:0,
+  cloud1Height:1.005, cloud1Opacity:0.6, cloud1Spin:0.06,
+  cloud2Height:1.03, cloud2Opacity:0.5, cloud2Spin:0.14,
+  cloud3Height:1.075, cloud3Opacity:0.5, cloud3Spin:0.1,
+  bgColor:'#040a1e', flameColor:'#3a6cff', flameColor2:'#c1faff', flameAmt:0.15,
+  atmoColor:'#9fc4ff', atmoCount:320, atmoSize:22, atmoSpeed:0.8,
+  starColor:'#cfe0ff', starCount:1400, starSize:1.6, starFlicker:1,
+  markerColor:'#ffd27a', markerCount:60, markerSize:16, markerSpeed:0.5,
+};
+const LAYERS = { NONE:0, TORUS_SCENE:1, BLOOM_SCENE:2, ENTIRE_SCENE:3 };
+
+const Lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const hexToVec3 = (hex) => {
+  const n = parseInt(hex.slice(1), 16);
+  return new THREE.Vector3(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+};
+const smoothstep01 = (t) => t * t * (3 - 2 * t);
+const sample = (stops, p) => {
+  if (p <= stops[0].p) return stops[0].v;
+  for (let i = 0; i < stops.length - 1; i++) {
+    const a = stops[i], b = stops[i + 1];
+    if (p <= b.p) return Lerp(a.v, b.v, smoothstep01((p - a.p) / (b.p - a.p)));
+  }
+  return stops[stops.length - 1].v;
+};
+const setLayers = (obj, ...layers) => {
+  obj.traverse((o) => {
+    o.layers.set(layers[0]);
+    for (let i = 1; i < layers.length; i++) o.layers.enable(layers[i]);
+  });
+};
+
+const SNOISE = `
+vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+float snoise(vec3 v){
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0); const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i = floor(v + dot(v, C.yyy)); vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy); vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + 1.0 * C.xxx; vec3 x2 = x0 - i2 + 2.0 * C.xxx; vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
+  i = mod(i, 289.0);
+  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 1.0/7.0; vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z *ns.z);
+  vec4 x_ = floor(j * ns.z); vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ *ns.x + ns.yyyy; vec4 y = y_ *ns.x + ns.yyyy; vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy); vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0)*2.0 + 1.0; vec4 s1 = floor(b1)*2.0 + 1.0; vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy; vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+  vec3 p0 = vec3(a0.xy,h.x); vec3 p1 = vec3(a0.zw,h.y); vec3 p2 = vec3(a1.xy,h.z); vec3 p3 = vec3(a1.zw,h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.5 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0); m = m * m;
+  return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+}`;
+
+const FinalPass = {
+  uniforms: {
+    iTime:{value:0}, tDiffuse:{value:null}, torusTexture:{value:null}, bloomTexture:{value:null}, haloTexture:{value:null},
+    uBg:{value:hexToVec3(CONFIG.bgColor)}, uFlameA:{value:hexToVec3(CONFIG.flameColor)},
+    uFlameB:{value:hexToVec3(CONFIG.flameColor2)}, uFlameAmt:{value:CONFIG.flameAmt},
+  },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position, 1.0); }`,
+  fragmentShader: `
+    uniform float iTime; uniform sampler2D tDiffuse; uniform sampler2D bloomTexture; uniform sampler2D torusTexture; uniform sampler2D haloTexture;
+    uniform vec3 uBg; uniform vec3 uFlameA; uniform vec3 uFlameB; uniform float uFlameAmt;
+    varying vec2 vUv;
+    vec3 warp3d(vec3 pos, float t){ float curv=.8,a=1.9,b=0.7; pos*=2.;
+      pos.x+=curv*sin(t+a*pos.y)+t*b; pos.y+=curv*cos(t+a*pos.x);
+      pos.y+=curv*sin(t+a*pos.z)+t*b; pos.z+=curv*cos(t+a*pos.y);
+      pos.z+=curv*sin(t+a*pos.x)+t*b; pos.x+=curv*cos(t+a*pos.z);
+      return 0.5+0.5*cos(pos.xyz+vec3(1,2,4)); }
+    void main(){
+      vec2 uv = 2.*vUv - 1.;
+      vec3 w = pow(warp3d(vec3(uv.x, sin(uv.y), uv.y), iTime*1.5), vec3(1.5));
+      vec3 flame = 1.5*uFlameA*w.x; flame*=w.y; flame += uFlameB*w.z;
+      flame *= smoothstep(0.25, 1., abs(uv.y));
+      float md = smoothstep(-0.7, 1., -uv.y*uv.x); flame *= md*md;
+      vec3 bg = uBg * (1.0 - 0.4 * length(uv));
+      vec3 halo = texture2D(haloTexture, vUv).xyz;
+      gl_FragColor = vec4(bg + flame*uFlameAmt + texture2D(bloomTexture, vUv).xyz + texture2D(torusTexture, vUv).xyz + texture2D(tDiffuse, vUv).xyz + halo, 1.);
+    }`,
+};
+
+const planetTime = { value: 0 };
+const cloudTime = { value: 0 };
+const starTime = { value: 0 };
+const markerTime = { value: 0 };
+const resUniform = { value: new THREE.Vector2(1, 1) };
+
+const canvas = document.getElementById('planet');
+const pixelRatio = () => window.devicePixelRatio;
+
+function updateRes(renderer) {
+  const s = renderer.getSize(new THREE.Vector2());
+  resUniform.value.set(s.x * renderer.getPixelRatio(), s.y * renderer.getPixelRatio());
+}
+
+function sampleLandPoints(mesh, count) {
+  const geo = mesh.geometry;
+  const pos = geo.attributes.position;
+  const uvAttr = geo.attributes.uv;
+  const idx = geo.index;
+  const triCount = idx ? idx.count / 3 : pos.count / 3;
+  const img = mesh.material.map && mesh.material.map.image;
+  if (!img || !uvAttr) return { positions: [], seeds: [] };
+
+  const canvas2d = document.createElement('canvas');
+  canvas2d.width = img.width; canvas2d.height = img.height;
+  const ctx = canvas2d.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const data = ctx.getImageData(0, 0, img.width, img.height).data;
+
+  const getI = (i) => (idx ? idx.getX(i) : i);
+  const cdf = new Float32Array(triCount);
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  let total = 0;
+  for (let t = 0; t < triCount; t++) {
+    a.fromBufferAttribute(pos, getI(t * 3));
+    b.fromBufferAttribute(pos, getI(t * 3 + 1));
+    c.fromBufferAttribute(pos, getI(t * 3 + 2));
+    total += b.clone().sub(a).cross(c.clone().sub(a)).length() * 0.5;
+    cdf[t] = total;
+  }
+
+  const positions = [], seeds = [];
+  const uva = new THREE.Vector2(), uvb = new THREE.Vector2(), uvc = new THREE.Vector2();
+  let guard = 0;
+  while (positions.length / 3 < count && guard++ < count * 400) {
+    const r = Math.random() * total;
+    let lo = 0, hi = triCount - 1;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (cdf[mid] < r) lo = mid + 1; else hi = mid; }
+    const t = lo;
+    a.fromBufferAttribute(pos, getI(t * 3));
+    b.fromBufferAttribute(pos, getI(t * 3 + 1));
+    c.fromBufferAttribute(pos, getI(t * 3 + 2));
+    uva.fromBufferAttribute(uvAttr, getI(t * 3));
+    uvb.fromBufferAttribute(uvAttr, getI(t * 3 + 1));
+    uvc.fromBufferAttribute(uvAttr, getI(t * 3 + 2));
+
+    let u = Math.random(), v = Math.random();
+    if (u + v > 1) { u = 1 - u; v = 1 - v; }
+    const wa = 1 - u - v, wb = u, wc = v;
+    const px = Math.floor((wa * uva.x + wb * uvb.x + wc * uvc.x) * (img.width - 1));
+    const py = Math.floor((wa * uva.y + wb * uvb.y + wc * uvc.y) * (img.height - 1));
+    const k = (py * img.width + px) * 4;
+    const cr = data[k], cg = data[k + 1], cb = data[k + 2];
+    if (cb > cr + 6 && cb > cg + 6) continue;
+
+    const p = a.clone().multiplyScalar(wa).add(b.clone().multiplyScalar(wb)).add(c.clone().multiplyScalar(wc)).multiplyScalar(1.012);
+    positions.push(p.x, p.y, p.z);
+    seeds.push(Math.random());
+  }
+  return { positions, seeds };
+}
+
+function initScene() {
+  const renderer = new THREE.WebGL1Renderer({ canvas, antialias: true });
+  renderer.setPixelRatio(pixelRatio());
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.VSMShadowMap;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
+
+  const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 200);
+  camera.position.set(0, 0, 8);
+  camera.layers.enable(LAYERS.TORUS_SCENE);
+  camera.layers.enable(LAYERS.BLOOM_SCENE);
+  camera.layers.enable(LAYERS.ENTIRE_SCENE);
+  scene.add(camera);
+
+  const ambient = new THREE.AmbientLight(0xffffff, 1.8);
+  const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+  sun.position.set(0, 10, 2);
+  setLayers(ambient, LAYERS.ENTIRE_SCENE);
+  setLayers(sun, LAYERS.ENTIRE_SCENE);
+  scene.add(ambient, sun);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.enablePan = false;
+  controls.enabled = false;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = CONFIG.autoRotate;
+  controls.minDistance = 3.5;
+  controls.maxDistance = 16;
+  controls.target.set(0, 0, 0);
+
+  const size = new THREE.Vector2(window.innerWidth, window.innerHeight);
+
+  const torusComposer = new EffectComposer(renderer);
+  torusComposer.renderToScreen = false;
+  torusComposer.addPass(new RenderPass(scene, camera));
+  torusComposer.addPass(new ShaderPass(GammaCorrectionShader));
+  torusComposer.addPass(new UnrealBloomPass(size.clone(), 0.22, 0.2, 0));
+  torusComposer.addPass(new ShaderPass(CopyShader));
+
+  const bloomComposer = new EffectComposer(renderer);
+  bloomComposer.renderToScreen = false;
+  bloomComposer.addPass(new RenderPass(scene, camera));
+  bloomComposer.addPass(new UnrealBloomPass(size.clone(), 0.5, 0.6, 0));
+  bloomComposer.addPass(new ShaderPass(GammaCorrectionShader));
+
+  const finalComposer = new EffectComposer(renderer);
+  finalComposer.addPass(new RenderPass(scene, camera));
+  const finalPass = new ShaderPass(FinalPass);
+  finalPass.uniforms.bloomTexture.value = bloomComposer.renderTarget1.texture;
+  finalPass.uniforms.torusTexture.value = torusComposer.renderTarget1.texture;
+  finalComposer.addPass(finalPass);
+
+  const worldGroup = new THREE.Group();
+  const planetGroup = new THREE.Group();
+  planetGroup.rotation.z = CONFIG.tilt;
+  const cloudGroup = new THREE.Group();
+  cloudGroup.rotation.z = CONFIG.tilt;
+  cloudGroup.visible = false;
+  worldGroup.add(planetGroup, cloudGroup);
+  scene.add(worldGroup);
+
+  // Atmosphere halo
+  const glowMat = new THREE.ShaderMaterial({
+    uniforms: { uGlow: { value: hexToVec3(CONFIG.glowColor) }, uIntensity: { value: CONFIG.glowIntensity } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+    fragmentShader: `
+      uniform vec3 uGlow; uniform float uIntensity; varying vec2 vUv;
+      void main(){
+        float d = length(vUv - 0.5) * 2.0;
+        float a = pow(clamp(1.0 - d, 0.0, 1.0), 2.2);
+        gl_FragColor = vec4(uGlow * a * uIntensity, a);
+      }`,
+    transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const glowMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), glowMat);
+  glowMesh.scale.setScalar(CONFIG.planetRadius * 2.3);
+  setLayers(glowMesh, LAYERS.BLOOM_SCENE);
+  worldGroup.add(glowMesh);
+
+  // Starfield
+  {
+    const pos = new Float32Array(CONFIG.starCount * 3);
+    const seed = new Float32Array(CONFIG.starCount);
+    const bright = new Float32Array(CONFIG.starCount);
+    for (let i = 0; i < CONFIG.starCount; i++) {
+      const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, s = Math.sqrt(1 - u * u);
+      pos[i * 3] = 90 * s * Math.cos(th); pos[i * 3 + 1] = 90 * u; pos[i * 3 + 2] = 90 * s * Math.sin(th);
+      seed[i] = Math.random() * 100; bright[i] = 0.35 + Math.random() * 0.65;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
+    g.setAttribute('bright', new THREE.BufferAttribute(bright, 1));
+    const m = new THREE.ShaderMaterial({
+      uniforms: { uTime: starTime, uSize: { value: CONFIG.starSize }, uFlicker: { value: CONFIG.starFlicker }, uColor: { value: hexToVec3(CONFIG.starColor) }, uRes: resUniform },
+      vertexShader: `
+        attribute float seed; attribute float bright;
+        uniform float uTime; uniform float uSize; uniform float uFlicker; uniform vec2 uRes;
+        varying float vTw;
+        void main(){
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          float tw = 0.6 + 0.4 * sin(uTime * uFlicker + seed);
+          vTw = bright * tw;
+          gl_PointSize = max(uSize * uRes.y / 900.0 * (90.0 / max(-mv.z, 1.0)), 1.0);
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `
+        uniform vec3 uColor; varying float vTw;
+        void main(){
+          vec2 p = gl_PointCoord - 0.5; float l = length(p); if (l > 0.5) discard;
+          float core = smoothstep(0.5, 0.0, l);
+          gl_FragColor = vec4(uColor, core * vTw);
+        }`,
+      transparent: true, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending,
+    });
+    const stars = new THREE.Points(g, m);
+    stars.frustumCulled = false;
+    setLayers(stars, LAYERS.ENTIRE_SCENE);
+    scene.add(stars);
+  }
+
+  // Ambient motes
+  const motes = (() => {
+    const n = CONFIG.atmoCount;
+    const pos = new Float32Array(n * 3), size = new Float32Array(n), seed = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      pos[i * 3] = Math.random() * 2 - 1; pos[i * 3 + 1] = Math.random() * 2 - 1; pos[i * 3 + 2] = Math.random() * 2 - 1;
+      size[i] = CONFIG.atmoSize * (0.4 + Math.random()); seed[i] = Math.random() * 100;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('size', new THREE.BufferAttribute(size, 1));
+    g.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
+    const m = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uRes: resUniform, uColor: { value: hexToVec3(CONFIG.atmoColor) } },
+      vertexShader: `
+        attribute float size; attribute float seed; uniform float uTime; uniform vec2 uRes;
+        varying float vA;
+        vec3 warp(vec3 p, float t){ float c=0.9,a=1.9,b=0.02,s=0.05; p*=2.;
+          p.x+=c*sin(s*t+a*p.y)+t*b; p.y+=c*cos(s*t+a*p.x); p.y+=c*sin(s*t+a*p.z)+t*b;
+          p.z+=c*cos(s*t+a*p.y); p.z+=c*sin(s*t+a*p.x)+t*b; p.x+=c*cos(s*t+a*p.z);
+          return cos(p+vec3(1,2,4)); }
+        void main(){
+          vec3 v = position*4.0 + warp(position, uTime)*1.2;
+          vec4 mv = modelViewMatrix * vec4(v, 1.0);
+          float r = length(v); float farF = 1.0 - smoothstep(5.0, 6.5, r); float nearF = smoothstep(0.0, 0.5, -mv.z);
+          vA = farF * nearF;
+          gl_PointSize = size * uRes.y / 900.0 / -mv.z; gl_PointSize = max(gl_PointSize, 1.0);
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `
+        uniform vec3 uColor; varying float vA;
+        void main(){ vec2 p = gl_PointCoord - 0.5; float l = length(p); if (l > 0.5) discard;
+          float tex = smoothstep(0.5, 0.0, l); gl_FragColor = vec4(uColor * tex, tex * vA * 0.55); }`,
+      transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+    });
+    const pts = new THREE.Points(g, m);
+    pts.frustumCulled = false;
+    setLayers(pts, LAYERS.ENTIRE_SCENE);
+    pts.onBeforeRender = () => {
+      m.uniforms.uTime.value = (performance.now() / 1000) * CONFIG.atmoSpeed * 8;
+      pts.position.copy(camera.position);
+      finalPass.uniforms.iTime.value = performance.now() / 1000;
+    };
+    scene.add(pts);
+    return pts;
+  })();
+
+  // Cloud shells
+  const cloudTex = new THREE.TextureLoader().load(PLANET_CLOUDS_PNG);
+  cloudTex.wrapS = cloudTex.wrapT = THREE.RepeatWrapping;
+  cloudTex.repeat.set(5, 5);
+
+  const cloudLayers = [
+    { h: CONFIG.cloud1Height, o: CONFIG.cloud1Opacity, s: 'cloud1Spin', ry: 0.0, phase: 0.0 },
+    { h: CONFIG.cloud2Height, o: CONFIG.cloud2Opacity, s: 'cloud2Spin', ry: 2.2, phase: 13.0 },
+    { h: CONFIG.cloud3Height, o: CONFIG.cloud3Opacity, s: 'cloud3Spin', ry: 4.3, phase: 27.0 },
+  ];
+  const cloudMeshes = cloudLayers.map((layer) => {
+    const mat = new THREE.MeshStandardMaterial({ map: cloudTex, transparent: true, depthWrite: false });
+    const uniforms = {
+      uTime: cloudTime, noiseScale: { value: 20 }, uSpeedX: { value: 1 }, uSpeedY: { value: 2 }, uSpeedZ: { value: 2 },
+      uOpacity: { value: layer.o }, uPhase: { value: layer.phase },
+    };
+    mat.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, uniforms);
+      shader.vertexShader = 'varying vec2 vCloudUv;\n' + shader.vertexShader.replace('void main() {', 'void main() {\n  vCloudUv = uv;');
+      shader.fragmentShader = `
+        varying vec2 vCloudUv;
+        uniform float uTime; uniform float noiseScale; uniform float uSpeedX; uniform float uSpeedY; uniform float uSpeedZ; uniform float uOpacity; uniform float uPhase;
+        ${SNOISE}
+        ` + shader.fragmentShader.replace('#include <dithering_fragment>', `#include <dithering_fragment>
+          gl_FragColor.rgb = vec3(1.0);
+          float cloudNoise = snoise(vec3(vCloudUv.x * noiseScale + uTime * uSpeedX + uPhase, vCloudUv.y * noiseScale - uTime * uSpeedY + uPhase, uTime * uSpeedZ + uPhase));
+          float cloudNdv = max(dot(normalize(vNormal), normalize(vViewPosition)), 0.0);
+          float cloudEdge = pow(1.0 - cloudNdv, 3.0);
+          float cloudMod = mix(cloudNoise, 1.0, cloudEdge);
+          float cloudNdl = dot(normalize(vNormal), normalize(vec3(-0.9, 0.18, 0.4)));
+          float cloudDay = 1.0 - smoothstep(0.30, -0.30, cloudNdl) * 0.9;
+          gl_FragColor.a *= cloudMod * uOpacity * cloudDay;
+        `);
+    };
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(CONFIG.planetRadius * layer.h, 64, 64), mat);
+    mesh.rotation.y = layer.ry;
+    mesh.renderOrder = 2;
+    setLayers(mesh, LAYERS.TORUS_SCENE, LAYERS.ENTIRE_SCENE);
+    cloudGroup.add(mesh);
+    return { mesh, spinKey: layer.s };
+  });
+
+  // Planet + markers
+  let planetMesh = null;
+  let markers = null;
+  let planetLoaded = false;
+  let entryStart = null;
+  const ENTRY_DUR = reduced ? 0.0001 : 1.9;
+  const ENTRY_START_Y = -6.5;
+
+  const draco = new DRACOLoader();
+  draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.setDRACOLoader(draco);
+
+  const firstMesh = (root) => { let found = null; root.traverse((o) => { if (!found && o.isMesh) found = o; }); return found; };
+
+  gltfLoader.load(PLANET_LIGHTS_GLB, (lightsGltf) => {
+    const lightsMesh = firstMesh(lightsGltf.scene);
+    const nightTex = lightsMesh && lightsMesh.material.map ? lightsMesh.material.map : null;
+
+    gltfLoader.load(PLANET_GLB, (gltf) => {
+      const src = firstMesh(gltf.scene);
+      const geo = src.geometry;
+      geo.computeBoundingSphere();
+      const bs = geo.boundingSphere;
+      geo.translate(-bs.center.x, -bs.center.y, -bs.center.z);
+      const scale = CONFIG.planetRadius / bs.radius;
+
+      const mat = src.material.clone();
+      mat.metalness = 0;
+      mat.roughness = 1;
+      mat.envMapIntensity = 0;
+      mat.onBeforeCompile = (shader) => {
+        Object.assign(shader.uniforms, {
+          time: planetTime, noiseScale: { value: 30 }, speedX: { value: 1.5 }, speedY: { value: 2.0 }, speedZ: { value: 2.5 },
+          rimColor: { value: hexToVec3(CONFIG.rimColor) }, rimPower: { value: CONFIG.rimPower },
+          nightBlendTexture: { value: nightTex }, nightLights: { value: CONFIG.nightLights },
+          terrainDepth: { value: CONFIG.terrainDepth }, terrainShade: { value: CONFIG.terrainShade },
+          oceanGlint: { value: CONFIG.oceanGlint }, oceanDeep: { value: CONFIG.oceanDeep },
+          oceanFlow: { value: CONFIG.oceanFlow }, oceanFlowSpeed: { value: CONFIG.oceanFlowSpeed }, oceanFlowScale: { value: CONFIG.oceanFlowScale },
+        });
+        shader.vertexShader = 'varying vec2 vCustomUv;\n' + shader.vertexShader.replace('void main() {', 'void main() {\n  vCustomUv = uv;');
+        shader.fragmentShader = `
+          varying vec2 vCustomUv;
+          uniform float time; uniform float noiseScale; uniform float speedX; uniform float speedY; uniform float speedZ;
+          uniform vec3 rimColor; uniform float rimPower; uniform sampler2D nightBlendTexture; uniform float nightLights;
+          uniform float terrainDepth; uniform float terrainShade; uniform float oceanGlint; uniform float oceanDeep;
+          uniform float oceanFlow; uniform float oceanFlowSpeed; uniform float oceanFlowScale;
+          ${SNOISE}
+          ` + shader.fragmentShader.replace('#include <dithering_fragment>', `#include <dithering_fragment>
+          vec3 normalizedNormal = normalize(vNormal);
+          vec3 viewDir = normalize(vViewPosition);
+          float rim = 1.0 - max(dot(viewDir, normalizedNormal), 0.0);
+          rim = pow(rim, rimPower); rim = pow(rim, 1.5); rim *= 0.7;
+          vec3 currentColor = gl_FragColor.rgb;
+          float blueDom = currentColor.b - max(currentColor.r, currentColor.g);
+          float waterMask = clamp(smoothstep(-0.005, 0.03, blueDom), 0.0, 1.0);
+          float shimmer = snoise(vec3(vCustomUv.x * noiseScale + time * speedX, vCustomUv.y * noiseScale - time * speedY, time * speedZ));
+          gl_FragColor.rgb += waterMask * shimmer * 0.025;
+          float fT = time * oceanFlowSpeed * 4.0;
+          float fS = 4.0 * oceanFlowScale;
+          float warp = snoise(vec3(vCustomUv.x * fS - fT * 0.5, vCustomUv.y * fS + fT * 0.4, fT * 0.5));
+          float flow = snoise(vec3(vCustomUv.x * fS * 2.0 + fT * 0.6 + warp, vCustomUv.y * fS * 2.0 - fT * 0.5, fT * 0.7));
+          flow = warp * 0.6 + flow * 0.4;
+          gl_FragColor.rgb += waterMask * flow * 0.12 * oceanFlow;
+          gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.01, 0.06, 0.16), waterMask * oceanDeep);
+          vec3 finalColor = mix(gl_FragColor.rgb, rimColor, rim);
+          gl_FragColor = vec4(finalColor, 1.0);
+          vec3 surfPos = -vViewPosition;
+          float terrH = dot(texture2D(map, vCustomUv).rgb, vec3(0.299, 0.587, 0.114));
+          vec3 sigX = dFdx(surfPos), sigY = dFdy(surfPos);
+          vec3 vR1 = cross(sigY, normalizedNormal), vR2 = cross(normalizedNormal, sigX);
+          float fDet = dot(sigX, vR1);
+          vec3 vGrad = sign(fDet) * (dFdx(terrH) * vR1 + dFdy(terrH) * vR2);
+          vec3 bumpedNormal = normalize(abs(fDet) * normalizedNormal - terrainDepth * vGrad);
+          vec3 shadeNormal = mix(bumpedNormal, normalizedNormal, waterMask);
+          vec3 cityLights = texture2D(nightBlendTexture, vCustomUv).rgb * gl_FragColor.rgb * nightLights;
+          vec3 viewSunDir = normalize(vec3(-0.9, 0.18, 0.4));
+          float ndl = dot(normalizedNormal, viewSunDir);
+          float dayAmt = smoothstep(-0.05, 0.35, ndl);
+          float relief = dot(shadeNormal, viewSunDir) - ndl;
+          gl_FragColor.rgb *= clamp(1.0 + relief * terrainShade * dayAmt, 0.55, 1.6);
+          float nightFactor  = smoothstep(0.18, -0.30, ndl);
+          float lightsFactor = smoothstep(0.30, -0.35, ndl);
+          gl_FragColor.rgb = mix(gl_FragColor.rgb, gl_FragColor.rgb * 0.08, nightFactor);
+          gl_FragColor.rgb += cityLights * lightsFactor;
+          vec3 halfDir = normalize(viewSunDir + viewDir);
+          float ripple = snoise(vec3(vCustomUv * 240.0, time * 4.0));
+          float ndh = max(dot(normalizedNormal, halfDir) + ripple * 0.02, 0.0);
+          float glint = pow(ndh, 140.0);
+          gl_FragColor.rgb += glint * waterMask * dayAmt * oceanGlint * vec3(1.0, 0.97, 0.88);
+        `);
+      };
+
+      planetMesh = new THREE.Mesh(geo, mat);
+      planetMesh.scale.setScalar(scale);
+      setLayers(planetMesh, LAYERS.TORUS_SCENE, LAYERS.ENTIRE_SCENE);
+      planetGroup.add(planetMesh);
+
+      const { positions, seeds } = sampleLandPoints(planetMesh, CONFIG.markerCount);
+      if (positions.length) {
+        const mg = new THREE.BufferGeometry();
+        mg.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        mg.setAttribute('seed', new THREE.Float32BufferAttribute(seeds, 1));
+        const mm = new THREE.ShaderMaterial({
+          uniforms: { uTime: markerTime, uColor: { value: hexToVec3(CONFIG.markerColor) }, uSize: { value: CONFIG.markerSize }, uSpeed: { value: CONFIG.markerSpeed }, uRes: resUniform },
+          vertexShader: `
+            attribute float seed; uniform float uSize; uniform vec2 uRes;
+            varying float vSeed; varying float vFade;
+            void main(){
+              vSeed = seed;
+              vec4 mv = modelViewMatrix * vec4(position, 1.0);
+              vec3 vn = normalize(normalMatrix * normalize(position));
+              vec3 vd = normalize(-mv.xyz);
+              vFade = smoothstep(0.15, 0.5, dot(vn, vd));
+              gl_PointSize = max(uSize * uRes.y / 900.0 * (7.0 / max(-mv.z, 1.0)), 2.0);
+              gl_Position = projectionMatrix * mv;
+            }`,
+          fragmentShader: `
+            uniform vec3 uColor; uniform float uTime; uniform float uSpeed;
+            varying float vSeed; varying float vFade;
+            void main(){
+              if (vFade <= 0.001) discard;
+              vec2 p = gl_PointCoord - 0.5;
+              float d = length(p) * 2.0;
+              if (d > 1.0) discard;
+              float core = smoothstep(0.30, 0.0, d) * 1.2;
+              float ph = fract(uTime * uSpeed + vSeed);
+              float ring = smoothstep(0.07, 0.0, abs(d - ph)) * (1.0 - ph);
+              gl_FragColor = vec4(uColor, clamp(core + ring, 0.0, 1.0) * vFade);
+            }`,
+          transparent: true, depthTest: true, depthWrite: false, blending: THREE.AdditiveBlending,
+        });
+        markers = new THREE.Points(mg, mm);
+        markers.frustumCulled = false;
+        setLayers(markers, LAYERS.ENTIRE_SCENE);
+        planetMesh.add(markers);
+      }
+
+      cloudGroup.visible = true;
+      planetLoaded = true;
+      entryStart = performance.now() / 1000;
+    });
+  });
+
+  // Scroll-driven choreography
+  const STOPS_X = [{ p: 0, v: 0 }, { p: 0.32, v: -3.1 }, { p: 0.64, v: 3.2 }, { p: 1, v: 0 }];
+  const STOPS_Y = [{ p: 0, v: -4.5 }, { p: 0.32, v: 0.55 }, { p: 0.64, v: 0.45 }, { p: 1, v: 0.15 }];
+  const STOPS_S = [{ p: 0, v: 2.15 }, { p: 0.32, v: 1.0 }, { p: 0.64, v: 0.92 }, { p: 1, v: 1.12 }];
+
+  let curP = 0, curX = 0, curY = STOPS_Y[0].v, curS = STOPS_S[0].v, spinPhase = 0;
+  worldGroup.position.set(STOPS_X[0].v, STOPS_Y[0].v, 0);
+  worldGroup.scale.setScalar(STOPS_S[0].v);
+
+  const onResize = () => {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    renderer.setPixelRatio(pixelRatio());
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    const rw = w * renderer.getPixelRatio(), rh = h * renderer.getPixelRatio();
+    torusComposer.setSize(w, h);
+    bloomComposer.setSize(w, h);
+    finalComposer.setSize(w, h);
+    updateRes(renderer);
+  };
+  window.addEventListener('resize', onResize);
+  onResize();
+
+  let last = performance.now() / 1000;
+  const frame = () => {
+    const now = performance.now() / 1000;
+    const dt = Math.min(now - last, 0.05);
+    last = now;
+
+    planetTime.value += dt / 12;
+    cloudTime.value += dt / 20;
+    starTime.value += dt;
+    markerTime.value += dt;
+
+    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const pTarget = clamp(window.scrollY / maxScroll, 0, 1);
+    curP += (pTarget - curP) * Math.min(1, dt * 4.5);
+
+    const sideScale = clamp(window.innerWidth / 1200, 0.5, 1);
+    const k = Math.min(1, dt * 3.2);
+    curX += (sample(STOPS_X, curP) * sideScale - curX) * k;
+    curY += (sample(STOPS_Y, curP) - curY) * k;
+    curS += (sample(STOPS_S, curP) - curS) * k;
+
+    let entryY = 0;
+    if (entryStart !== null) {
+      const t = clamp((now - entryStart) / ENTRY_DUR, 0, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      entryY = ENTRY_START_Y * (1 - ease);
+    }
+    worldGroup.position.set(curX, curY + entryY, 0);
+    worldGroup.scale.setScalar(curS);
+
+    spinPhase += dt * CONFIG.spin;
+    planetGroup.rotation.y = CONFIG.initRotation + spinPhase + curP * Math.PI * 1.6;
+    cloudGroup.rotation.y = planetGroup.rotation.y;
+    cloudMeshes.forEach(({ mesh, spinKey }) => { mesh.rotation.y += dt * CONFIG[spinKey]; });
+
+    glowMesh.quaternion.copy(camera.quaternion);
+    controls.update();
+    if (window.__planetOpacity === 0) { requestAnimationFrame(frame); return; }
+
+    camera.layers.set(LAYERS.TORUS_SCENE);
+    torusComposer.render();
+    camera.layers.set(LAYERS.BLOOM_SCENE);
+    bloomComposer.render();
+    camera.layers.set(LAYERS.ENTIRE_SCENE);
+    finalComposer.render();
+
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
+try {
+  initScene();
+} catch (err) {
+  console.warn('Planet scene unavailable; page content still renders.', err);
+  canvas.style.display = 'none';
+}
+</script>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-PUBLISHABLE-KEY';
+
+const form = document.getElementById('reserve-form');
+const statusEl = document.getElementById('form-status');
+const submitBtn = document.getElementById('submit-btn');
+const suiteSelect = document.getElementById('suite-select');
+const checkIn = document.getElementById('check-in');
+const checkOut = document.getElementById('check-out');
+
+const configured = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR-PUBLISHABLE');
+const sb = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let booked = [];
+
+const todayIso = new Date().toISOString().slice(0, 10);
+checkIn.min = todayIso;
+checkOut.min = todayIso;
+
+const setStatus = (msg, kind = '') => {
+  statusEl.textContent = msg;
+  statusEl.className = `form-status ${kind}`;
+};
+
+if (!configured) {
+  submitBtn.disabled = true;
+  setStatus('Online booking is not connected yet. Please contact the concierge directly.', 'err');
+}
+
+document.querySelectorAll('[data-suite]').forEach((btn) => {
+  btn.addEventListener('click', () => { suiteSelect.value = btn.dataset.suite; });
+});
+
+const overlaps = (suite, inDate, outDate) =>
+  booked.some((b) => b.suite === suite && inDate < b.check_out && outDate > b.check_in);
+
+const checkDates = () => {
+  const inDate = checkIn.value, outDate = checkOut.value;
+  if (!inDate || !outDate) return true;
+  if (outDate <= inDate) { setStatus('Check-out must be after check-in.', 'err'); return false; }
+  if (overlaps(suiteSelect.value, inDate, outDate)) {
+    setStatus('That suite is already booked for those dates. Please choose different dates.', 'err');
+    return false;
+  }
+  if (configured) setStatus('Those dates are available.', 'ok');
+  return true;
+};
+
+async function loadAvailability() {
+  if (!sb) return;
+  const { data, error } = await sb.from('suite_availability').select('suite, check_in, check_out');
+  if (error) { setStatus('Availability could not be loaded. Please try again shortly.', 'err'); return; }
+  booked = data;
+  checkDates();
+}
+
+[suiteSelect, checkIn, checkOut].forEach((el) => el.addEventListener('change', checkDates));
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!sb) return;
+  if (!form.reportValidity() || !checkDates()) return;
+
+  submitBtn.disabled = true;
+  setStatus('Sending your request…');
+  const fd = new FormData(form);
+  const { error } = await sb.from('reservations').insert({
+    suite: fd.get('suite'),
+    check_in: fd.get('check_in'),
+    check_out: fd.get('check_out'),
+    guests: Number(fd.get('guests')),
+    guest_name: fd.get('guest_name').trim(),
+    email: fd.get('email').trim(),
+    phone: (fd.get('phone') || '').trim() || null,
+  });
+  submitBtn.disabled = false;
+
+  if (error) {
+    if (error.code === '23P01') {
+      setStatus('Those dates were just booked by someone else. Please choose different dates.', 'err');
+      await loadAvailability();
+    } else {
+      setStatus('Something went wrong sending your request. Please try again or call the concierge.', 'err');
+    }
+    return;
+  }
+  form.reset();
+  checkIn.min = todayIso;
+  checkOut.min = todayIso;
+  setStatus('Request received. The concierge will confirm your stay by email.', 'ok');
+  await loadAvailability();
+});
+
+loadAvailability();
+</script>
+<script type="module">
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!reduced) {
+  const bar = document.querySelector('.scroll-progress');
+  const parallax = [...document.querySelectorAll('[data-parallax]')];
+  let ticking = false;
+  const update = () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
+    parallax.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      const baseTop = rect.top - (el._y || 0);
+      const y = (baseTop + rect.height / 2 - window.innerHeight / 2) * parseFloat(el.dataset.parallax);
+      el._y = y;
+      el.style.translate = `0 ${y.toFixed(1)}px`;
+    });
+    ticking = false;
+  };
+  const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  window.addEventListener('scroll', request, { passive: true });
+  window.addEventListener('resize', request);
+  update();
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const SNOISE = `
+vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+float snoise(vec3 v){
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0); const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i = floor(v + dot(v, C.yyy)); vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy); vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + 1.0 * C.xxx; vec3 x2 = x0 - i2 + 2.0 * C.xxx; vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
+  i = mod(i, 289.0);
+  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 1.0/7.0; vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z *ns.z);
+  vec4 x_ = floor(j * ns.z); vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ *ns.x + ns.yyyy; vec4 y = y_ *ns.x + ns.yyyy; vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy); vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0)*2.0 + 1.0; vec4 s1 = floor(b1)*2.0 + 1.0; vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy; vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+  vec3 p0 = vec3(a0.xy,h.x); vec3 p1 = vec3(a0.zw,h.y); vec3 p2 = vec3(a1.xy,h.z); vec3 p3 = vec3(a1.zw,h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.5 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0); m = m * m;
+  return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+}`;
+
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const planetCanvas = document.getElementById('planet');
+const canvas = document.getElementById('dunes');
+const sanctuary = document.getElementById('sanctuary');
+const sceneSections = [...document.querySelectorAll('[data-scene]')];
+
+const PALETTES = {
+  dawn:   { skyTop: '#1d3c6e', skyHor: '#5d7aa3', sand: '#7a6754', shadow: '#2b2f4a', mount: '#33476b', sun: '#ffd9a8', star: 0.0 },
+  golden: { skyTop: '#2b3a6b', skyHor: '#d98a5b', sand: '#a8733f', shadow: '#4a2e2a', mount: '#5a3f5f', sun: '#ffc27a', star: 0.15 },
+  night:  { skyTop: '#040a1e', skyHor: '#14234a', sand: '#1f2b4d', shadow: '#060a18', mount: '#0a1230', sun: '#9fc4ff', star: 1.0 },
+};
+const COLOR_KEYS = ['skyTop', 'skyHor', 'sand', 'shadow', 'mount', 'sun'];
+const state = {};
+COLOR_KEYS.forEach((k) => { state[k] = new THREE.Color(PALETTES.dawn[k]); });
+state.star = PALETTES.dawn.star;
+
+const sunDir = new THREE.Vector3(0.4, 0.5, -0.7).normalize();
+const U = {
+  uTime: { value: 0 }, uWind: { value: 0 }, uSunDir: { value: sunDir },
+  uSand: { value: state.sand }, uShadow: { value: state.shadow }, uSkyTop: { value: state.skyTop },
+  uSkyHor: { value: state.skyHor }, uSun: { value: state.sun }, uMount: { value: state.mount },
+  uStar: { value: state.star },
+};
+
+function build() {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 20, 30);
+
+  const mobile = window.innerWidth < 768;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1 : 1.5));
+  const seg = mobile ? 110 : 220;
+  const terrainGeo = new THREE.PlaneGeometry(700, 600, seg, seg);
+  terrainGeo.rotateX(-Math.PI / 2);
+  terrainGeo.translate(0, 0, -120);
+  const terrain = new THREE.Mesh(terrainGeo, new THREE.ShaderMaterial({
+    uniforms: { uTime: U.uTime, uWind: U.uWind, uSand: U.uSand, uShadow: U.uShadow, uSkyHor: U.uSkyHor, uLightDir: U.uSunDir },
+    vertexShader: `
+      uniform float uWind;
+      varying vec3 vW; varying vec3 vN;
+      ${SNOISE}
+      float ht(vec2 p){
+        float h = snoise(vec3(p.x*0.009, 0.0, p.y*0.009 + uWind*0.02)) * 18.0;
+        h += snoise(vec3(p.x*0.03 + uWind*0.12, 1.7, p.y*0.03)) * 3.2;
+        h += snoise(vec3(p.x*0.11, 3.1, p.y*0.11 - uWind*0.25)) * 0.5;
+        return h - 6.0;
+      }
+      void main(){
+        vec2 p = position.xz;
+        float h = ht(p);
+        float e = 0.6;
+        float hx = ht(p + vec2(e, 0.0));
+        float hz = ht(p + vec2(0.0, e));
+        vN = normalize(vec3(h - hx, e, h - hz));
+        vW = vec3(p.x, h, p.y);
+        gl_Position = projectionMatrix * viewMatrix * vec4(vW, 1.0);
+      }`,
+    fragmentShader: `
+      uniform float uTime; uniform vec3 uSand; uniform vec3 uShadow; uniform vec3 uSkyHor; uniform vec3 uLightDir;
+      varying vec3 vW; varying vec3 vN;
+      ${SNOISE}
+      void main(){
+        vec3 n = normalize(vN);
+        float ndl = max(dot(n, normalize(uLightDir)), 0.0);
+        float lit = smoothstep(0.05, 0.85, ndl);
+        vec3 col = mix(uShadow, uSand, lit);
+        col *= 0.92 + 0.08 * snoise(vec3(vW.xz * 0.35, 0.0));
+        col += 0.02 * snoise(vec3(vW.x * 0.6, 0.0, vW.z * 0.06 + uTime * 0.01));
+        float d = length(vW - cameraPosition);
+        col = mix(col, uSkyHor, smoothstep(60.0, 380.0, d));
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+  }));
+  scene.add(terrain);
+
+  const mountains = new THREE.Mesh(
+    new THREE.PlaneGeometry(1600, 200, 320, 1).translate(0, 100, -440),
+    new THREE.ShaderMaterial({
+      uniforms: { uMount: U.uMount, uSkyHor: U.uSkyHor },
+      vertexShader: `
+        varying float vY;
+        ${SNOISE}
+        void main(){
+          float r = pow(1.0 - abs(snoise(vec3(position.x * 0.004, 4.0, 0.0))), 3.0);
+          vec3 p = vec3(position.x, -40.0 + 130.0 * r, position.z);
+          vY = p.y;
+          gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
+        }`,
+      fragmentShader: `
+        uniform vec3 uMount; uniform vec3 uSkyHor; varying float vY;
+        void main(){
+          float t = smoothstep(-40.0, 60.0, vY);
+          gl_FragColor = vec4(mix(uMount, uSkyHor, 0.35 + 0.25 * (1.0 - t)), 1.0);
+        }`,
+    })
+  );
+  scene.add(mountains);
+
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(300, 32, 16),
+    new THREE.ShaderMaterial({
+      uniforms: { uTime: U.uTime, uSkyTop: U.uSkyTop, uSkyHor: U.uSkyHor, uSun: U.uSun, uStar: U.uStar, uSunDir: U.uSunDir },
+      side: THREE.BackSide,
+      depthWrite: false,
+      vertexShader: `
+        varying vec3 vDir;
+        void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `
+        uniform float uTime; uniform vec3 uSkyTop; uniform vec3 uSkyHor; uniform vec3 uSun; uniform float uStar; uniform vec3 uSunDir;
+        varying vec3 vDir;
+        void main(){
+          vec3 d = normalize(vDir);
+          float h = d.y;
+          vec3 col = mix(uSkyHor, uSkyTop, smoothstep(0.0, 0.55, h));
+          col += uSun * pow(max(dot(d, normalize(uSunDir)), 0.0), 18.0) * 0.7;
+          vec3 g = floor(d * 220.0);
+          float r = fract(sin(dot(g, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+          float tw = 0.7 + 0.3 * sin(uTime * 2.0 + r * 80.0);
+          col += step(0.9965, r) * uStar * smoothstep(0.08, 0.45, h) * tw;
+          gl_FragColor = vec4(col, 1.0);
+        }`,
+    })
+  );
+  sky.renderOrder = -1;
+  scene.add(sky);
+
+  const resize = () => {
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  };
+  window.addEventListener('resize', resize);
+
+  let mix = 0;
+  let t = 0;
+  let last = performance.now() / 1000;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const palTarget = {};
+  Object.keys(PALETTES).forEach((k) => {
+    palTarget[k] = { ...PALETTES[k], c: COLOR_KEYS.reduce((o, key) => ({ ...o, [key]: new THREE.Color(PALETTES[k][key]) }), {}) };
+  });
+
+  const frame = () => {
+    const now = performance.now() / 1000;
+    const dt = Math.min(now - last, 0.05);
+    last = now;
+    if (!reduced) t += dt;
+    U.uTime.value = t;
+    U.uWind.value = t;
+
+    const sy = window.scrollY;
+    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const onTarget = sy > sanctuary.offsetTop - window.innerHeight * 0.6 ? 1 : 0;
+    mix += (onTarget - mix) * Math.min(1, dt * 2.2);
+    const pd = clamp((sy - sanctuary.offsetTop) / Math.max(1, max - sanctuary.offsetTop), 0, 1);
+
+    const mid = window.innerHeight / 2;
+    let best = null, bestDist = Infinity;
+    sceneSections.forEach((s) => {
+      const r = s.getBoundingClientRect();
+      const dist = Math.abs(r.top + r.height / 2 - mid);
+      if (dist < bestDist) { bestDist = dist; best = s; }
+    });
+    const tgt = palTarget[best ? best.dataset.scene : 'dawn'];
+    const a = Math.min(1, dt * 1.4);
+    COLOR_KEYS.forEach((k) => state[k].lerp(tgt.c[k], a));
+    state.star += (tgt.star - state.star) * a;
+    U.uStar.value = state.star;
+
+    camera.position.set(Math.sin(t * 0.15) * 2.5, 20 + Math.sin(t * 0.4) * 0.6, 30 - pd * 190);
+    camera.lookAt(Math.sin(t * 0.1) * 3, 4, camera.position.z - 60);
+    sky.position.copy(camera.position);
+
+    const planetOp = 1 - mix;
+    window.__planetOpacity = planetOp < 0.01 ? 0 : planetOp;
+    planetCanvas.style.opacity = planetOp.toFixed(3);
+    canvas.style.opacity = mix.toFixed(3);
+    if (mix > 0.01) renderer.render(scene, camera);
+
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
+try {
+  build();
+} catch (err) {
+  console.warn('Dune scene unavailable.', err);
+}
+</script>
+</body>
+</html>
