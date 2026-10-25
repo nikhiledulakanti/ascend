@@ -29,3 +29,20 @@ create view public.suite_availability as
   where status <> 'cancelled';
 
 grant select on public.suite_availability to anon;
+
+create table public.leads (
+  id uuid primary key default gen_random_uuid(),
+  intent text not null check (intent in ('signup', 'sales')),
+  name text not null check (char_length(name) between 1 and 120),
+  email text not null check (char_length(email) between 3 and 200 and email like '%_@_%'),
+  company text check (company is null or char_length(company) <= 160),
+  message text check (message is null or char_length(message) <= 1000),
+  created_at timestamptz not null default now()
+);
+
+alter table public.leads enable row level security;
+
+create policy "public can submit a lead"
+  on public.leads for insert
+  to anon
+  with check (true);
