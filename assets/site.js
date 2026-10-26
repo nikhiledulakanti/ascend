@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, ORG_SLUG } from './config.js';
+import './motion.js';
 
 const configured = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR-PUBLISHABLE');
 const sb = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
@@ -9,30 +10,6 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const money = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const isoDate = (d) => d.toISOString().slice(0, 10);
 const todayIso = isoDate(new Date());
-
-if (!document.getElementById('planet') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const bar = document.createElement('div');
-  bar.className = 'scroll-progress';
-  bar.setAttribute('aria-hidden', 'true');
-  document.body.prepend(bar);
-  const targets = $$('.card, .job, .post, .form, .table-wrap, .calc > *, .section-head, .page-hero > *, .prose > *, .footer-grid > *, .notice, .kpi, .stat');
-  targets.forEach((el, i) => {
-    el.setAttribute('data-reveal', '');
-    el.style.setProperty('--rd', `${(i % 4) * 90}ms`);
-  });
-  const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) { e.target.classList.add('in'); revealObserver.unobserve(e.target); }
-    });
-  }, { threshold: 0.15, rootMargin: '0px 0px -6% 0px' });
-  targets.forEach((el) => revealObserver.observe(el));
-  const updateProgress = () => {
-    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    bar.style.transform = `scaleX(${window.scrollY / max})`;
-  };
-  window.addEventListener('scroll', updateProgress, { passive: true });
-  updateProgress();
-}
 
 const setStatus = (el, msg, kind = '') => {
   if (!el) return;

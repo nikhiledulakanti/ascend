@@ -16,9 +16,6 @@ html.lenis,html.lenis body{height:auto}
 .lenis.lenis-stopped{overflow:hidden}
 [data-reveal]{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.22,.7,.2,1),transform .7s cubic-bezier(.22,.7,.2,1);transition-delay:var(--rd,0ms);will-change:opacity,transform}
 [data-reveal].in{opacity:1;transform:none !important}
-.feature-grid > [data-reveal]:nth-child(odd),.suite-grid > [data-reveal]:nth-child(odd){transform:translateX(-50px)}
-.feature-grid > [data-reveal]:nth-child(even),.suite-grid > [data-reveal]:nth-child(even){transform:translateX(50px)}
-.reserve-form[data-reveal]{transform:scale(.94)}
 .hero-inner,.dashboard,.cta-card{will-change:translate}
 
 #planet{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:0;pointer-events:none}

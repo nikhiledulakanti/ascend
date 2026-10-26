@@ -11,14 +11,6 @@ if (!reduced) {
   requestAnimationFrame(raf);
 }
 
-const io = new IntersectionObserver((entries) => {
-  entries.forEach((e) => {
-    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  });
-}, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
-document.querySelectorAll('[data-reveal]').forEach((el) => {
-  if (reduced) el.classList.add('in'); else io.observe(el);
-});
 
 const statusEl = document.getElementById('earth-status');
 const barEl = document.getElementById('earth-bar');
@@ -418,7 +410,6 @@ const onDuneResize = () => {
 window.addEventListener('resize', onDuneResize);
 
 const progressBar = document.querySelector('.scroll-progress');
-const parallax = [...document.querySelectorAll('[data-parallax]')];
 
 let mix = 0;
 let t = 0;
@@ -490,13 +481,6 @@ const frame = () => {
     renderer.render(heroScene, heroCam);
   }
 
-  parallax.forEach((el) => {
-    const rect = el.getBoundingClientRect();
-    const baseTop = rect.top - (el._y || 0);
-    const y = (baseTop + rect.height / 2 - window.innerHeight / 2) * parseFloat(el.dataset.parallax);
-    el._y = y;
-    el.style.translate = `0 ${y.toFixed(1)}px`;
-  });
 
   requestAnimationFrame(frame);
 };
