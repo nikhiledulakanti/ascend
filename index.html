@@ -16,6 +16,9 @@
   }
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
+<script>window.earthReady = new Promise((resolve) => { window.resolveEarth = resolve; });</script>
 <style>
 :root{
   --bg:#f6f3ec; --bg-2:#efeadf; --ink:#0f1b33; --muted:#4a5672; --muted-2:#6d7890;
@@ -140,6 +143,19 @@ html.lenis,html.lenis body{height:auto}
 .field textarea{font:inherit;font-size:15px;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid var(--line-strong);border-radius:12px;padding:12px 14px;min-height:90px;resize:vertical;outline:none;color-scheme:light}
 .field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(93,240,168,.18)}
 
+.earth-viewer{max-width:1100px;margin:0 auto}
+#earth-view{width:100%;aspect-ratio:2/1;display:block;border-radius:22px;border:1px solid var(--line-strong);background:#dfe9f5;cursor:grab;touch-action:none;box-shadow:var(--shadow)}
+#earth-view.grabbing{cursor:grabbing}
+.earth-bar-wrap{height:4px;border-radius:4px;background:rgba(20,40,90,.1);margin-top:14px;overflow:hidden}
+#earth-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .2s}
+.earth-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+#earth-status{font-size:14px;color:var(--muted)}
+.earth-buttons{display:flex;gap:8px}
+.earth-buttons button{font:inherit;font-size:14px;min-width:44px;padding:8px 14px;border-radius:999px;border:1px solid var(--line-strong);background:rgba(255,255,255,.85);color:var(--ink);cursor:pointer}
+.earth-buttons button:hover{background:#fff}
+.earth-credit{font-size:13px;color:var(--muted-2);margin-top:12px}
+.earth-credit a{color:var(--accent);text-decoration:underline}
+
 /* CTA + FOOTER */
 .cta{padding-bottom:0}
 .cta-card{max-width:760px;margin:0 auto;text-align:center;padding:clamp(48px,7vw,80px) clamp(28px,5vw,64px);border-radius:var(--radius-lg);background:radial-gradient(120% 140% at 50% 0%,rgba(93,240,168,.12),transparent 55%),var(--glass-2);border:1px solid var(--line-strong);box-shadow:var(--shadow);backdrop-filter:blur(18px)}
@@ -229,6 +245,27 @@ html.lenis,html.lenis body{height:auto}
       </div>
     </div>
   </header>
+
+  <section class="section" id="earth">
+    <div class="section-head">
+      <span class="eyebrow">Satellite view</span>
+      <h2>Earth from orbit</h2>
+      <p>Real NASA satellite imagery of land, oceans, and ice. The full image is decoded in your browser; drag to pan and scroll to zoom.</p>
+    </div>
+    <div class="earth-viewer">
+      <canvas id="earth-view" aria-label="NASA satellite image of Earth"></canvas>
+      <div class="earth-bar-wrap" id="earth-progress"><div id="earth-bar"></div></div>
+      <div class="earth-toolbar">
+        <p id="earth-status">Loading satellite image…</p>
+        <div class="earth-buttons">
+          <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+          <button type="button" id="zoom-reset">Reset</button>
+          <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+        </div>
+      </div>
+      <p class="earth-credit">Image: NASA Blue Marble, land shallow topography, 8192 px TIFF (public domain). <a href="assets/earth/land_shallow_topo_8192.tif">Download TIFF</a></p>
+    </div>
+  </section>
 
   <section class="section features" id="features">
     <div class="section-head">
@@ -964,8 +1001,19 @@ function initScene() {
 
       planetMesh = new THREE.Mesh(geo, mat);
       planetMesh.scale.setScalar(scale);
+      planetMesh.visible = false;
       setLayers(planetMesh, LAYERS.TORUS_SCENE, LAYERS.ENTIRE_SCENE);
       planetGroup.add(planetMesh);
+
+      window.earthReady.then((earthCanvas) => {
+        if (earthCanvas) {
+          const earthTex = new THREE.CanvasTexture(earthCanvas);
+          earthTex.encoding = THREE.sRGBEncoding;
+          earthTex.flipY = false;
+          mat.map = earthTex;
+          mat.needsUpdate = true;
+        }
+        planetMesh.visible = true;
 
       const { positions, seeds } = sampleLandPoints(planetMesh, CONFIG.markerCount);
       if (positions.length) {
@@ -1010,6 +1058,7 @@ function initScene() {
       cloudGroup.visible = true;
       planetLoaded = true;
       entryStart = performance.now() / 1000;
+      });
     });
   });
 
@@ -1438,6 +1487,120 @@ try {
 } catch (err) {
   console.warn('Dune scene unavailable.', err);
 }
+</script>
+<script>
+const TIFF_URL = 'assets/earth/land_shallow_topo_8192.tif';
+const viewCanvas = document.getElementById('earth-view');
+const vctx = viewCanvas.getContext('2d');
+const statusEl = document.getElementById('earth-status');
+const barEl = document.getElementById('earth-bar');
+const barWrap = document.getElementById('earth-progress');
+const view = { x: 0, y: 0, w: 0, h: 0 };
+let src = null;
+
+const clampView = () => {
+  view.w = Math.min(src.width, Math.max(256, view.w));
+  view.h = view.w / 2;
+  view.x = Math.min(Math.max(0, view.x), src.width - view.w);
+  view.y = Math.min(Math.max(0, view.y), src.height - view.h);
+};
+const draw = () => {
+  vctx.drawImage(src, view.x, view.y, view.w, view.h, 0, 0, viewCanvas.width, viewCanvas.height);
+};
+const zoomAt = (factor, ax = 0.5, ay = 0.5) => {
+  const px = view.x + ax * view.w, py = view.y + ay * view.h;
+  view.w *= factor;
+  clampView();
+  view.x = px - ax * view.w;
+  view.y = py - ay * view.h;
+  clampView();
+  draw();
+};
+const resetView = () => {
+  view.w = src.width; view.x = 0; view.y = 0;
+  clampView();
+  draw();
+};
+
+let drag = null;
+viewCanvas.addEventListener('pointerdown', (e) => {
+  if (!src) return;
+  drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y };
+  viewCanvas.setPointerCapture(e.pointerId);
+  viewCanvas.classList.add('grabbing');
+});
+viewCanvas.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  const rect = viewCanvas.getBoundingClientRect();
+  const scale = view.w / rect.width;
+  view.x = drag.vx - (e.clientX - drag.x) * scale;
+  view.y = drag.vy - (e.clientY - drag.y) * scale;
+  clampView();
+  draw();
+});
+const endDrag = () => { drag = null; viewCanvas.classList.remove('grabbing'); };
+viewCanvas.addEventListener('pointerup', endDrag);
+viewCanvas.addEventListener('pointercancel', endDrag);
+viewCanvas.addEventListener('wheel', (e) => {
+  if (!src) return;
+  e.preventDefault();
+  const rect = viewCanvas.getBoundingClientRect();
+  zoomAt(e.deltaY > 0 ? 1.15 : 1 / 1.15, (e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height);
+}, { passive: false });
+document.getElementById('zoom-in').addEventListener('click', () => src && zoomAt(1 / 1.5));
+document.getElementById('zoom-out').addEventListener('click', () => src && zoomAt(1.5));
+document.getElementById('zoom-reset').addEventListener('click', () => src && resetView());
+
+async function loadEarth() {
+  statusEl.textContent = 'Connecting to the satellite archive…';
+  const res = await fetch(TIFF_URL);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const total = Number(res.headers.get('content-length')) || 27797968;
+  const reader = res.body.getReader();
+  const parts = [];
+  let got = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    parts.push(value);
+    got += value.length;
+    barEl.style.width = Math.min(100, (got / total) * 100) + '%';
+    statusEl.textContent = `Downloading NASA Earth image… ${(got / 1048576).toFixed(1)} MB`;
+  }
+  const bytes = new Uint8Array(got);
+  let off = 0;
+  parts.forEach((p) => { bytes.set(p, off); off += p.length; });
+
+  statusEl.textContent = 'Decoding TIFF…';
+  await new Promise((r) => setTimeout(r, 50));
+  const ifd = window.UTIF.decode(bytes.buffer)[0];
+  window.UTIF.decodeImage(bytes.buffer, ifd);
+  const rgba = window.UTIF.toRGBA8(ifd);
+  const canvas = document.createElement('canvas');
+  canvas.width = ifd.width;
+  canvas.height = ifd.height;
+  canvas.getContext('2d').putImageData(
+    new ImageData(new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, rgba.byteLength), ifd.width, ifd.height), 0, 0
+  );
+  return canvas;
+}
+
+viewCanvas.width = 1600;
+viewCanvas.height = 800;
+loadEarth()
+  .then((canvas) => {
+    src = canvas;
+    resetView();
+    barWrap.hidden = true;
+    statusEl.textContent = `NASA Blue Marble, ${src.width} × ${src.height} px. Drag to pan, scroll to zoom.`;
+    window.resolveEarth(canvas);
+  })
+  .catch((err) => {
+    console.warn('Satellite image failed to load.', err);
+    barWrap.hidden = true;
+    statusEl.textContent = 'The satellite image could not be loaded. Please refresh the page.';
+    window.resolveEarth(null);
+  });
 </script>
 </body>
 </html>
