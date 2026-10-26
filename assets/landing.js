@@ -239,7 +239,7 @@ const updateGlobe = (dt) => {
   }
   globe.rotation.set(gs.pitch, gs.yaw, 0);
   globe.position.y = THREE.MathUtils.lerp(HERO_PIVOT_Y, 0, globeZoom());
-  if (gs.zoom <= 1) {
+  if (gs.zoom <= 1 && gs.targetYaw === null) {
     gs.mapLat = clamp(THREE.MathUtils.radToDeg(gs.pitch), -85, 85);
     gs.mapLon = normLon(THREE.MathUtils.radToDeg(Math.PI / 2 - gs.yaw) - 180);
   }
