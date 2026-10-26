@@ -15,7 +15,7 @@ if (!document.getElementById('planet') && !window.matchMedia('(prefers-reduced-m
   bar.className = 'scroll-progress';
   bar.setAttribute('aria-hidden', 'true');
   document.body.prepend(bar);
-  const targets = $$('.card, .job, .post, .form, .table-wrap, .calc > *, .section-head, .page-hero > *, .prose > *, .footer-grid > *, .notice');
+  const targets = $$('.card, .job, .post, .form, .table-wrap, .calc > *, .section-head, .page-hero > *, .prose > *, .footer-grid > *, .notice, .kpi, .stat');
   targets.forEach((el, i) => {
     el.setAttribute('data-reveal', '');
     el.style.setProperty('--rd', `${(i % 4) * 90}ms`);
