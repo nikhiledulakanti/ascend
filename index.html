@@ -140,13 +140,6 @@ html.lenis,html.lenis body{height:auto}
 
 .field textarea{font:inherit;font-size:15px;color:var(--ink);background:rgba(4,6,15,.55);border:1px solid var(--line-strong);border-radius:12px;padding:12px 14px;min-height:90px;resize:vertical;outline:none;color-scheme:dark}
 .field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(93,240,168,.18)}
-.lead-dialog{width:min(480px,calc(100vw - 32px));background:var(--glass-2);color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--radius-lg);padding:32px;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
-.lead-dialog::backdrop{background:rgba(4,6,15,.7);backdrop-filter:blur(4px)}
-.lead-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-.lead-head h3{font-size:22px;font-weight:800}
-.lead-close{background:none;border:0;color:var(--muted);font-size:28px;cursor:pointer;line-height:1;padding:4px 8px}
-.lead-close:hover{color:var(--ink)}
-.lead-form{display:grid;gap:14px}
 
 /* CTA + FOOTER */
 .cta{padding-bottom:0}
@@ -206,22 +199,22 @@ html.lenis,html.lenis body{height:auto}
     <nav class="nav">
       <a class="brand" href="#top"><span class="brand-mark">▲</span>Ascend</a>
       <div class="nav-links">
-        <a href="#sanctuary">Sanctuary</a>
-        <a href="#suites">Suites</a>
-        <a href="#features">Features</a>
-        <a href="#contact">Reservations</a>
+        <a href="sanctuary.html">Sanctuary</a>
+        <a href="suites.html">Suites</a>
+        <a href="features.html">Features</a>
+        <a href="reserve.html">Reservations</a>
       </div>
-      <a class="btn btn-ghost" href="#cta" data-lead="signup">Sign Up</a>
+      <a class="btn btn-ghost" href="sign-up.html">Sign Up</a>
     </nav>
 
     <div class="hero-inner" data-parallax="-0.12">
       <h1 class="hero-title" data-reveal style="--rd:60ms">Scale Smarter,<br>Not <em>Harder</em></h1>
       <p class="hero-sub" data-reveal style="--rd:180ms">Drive your funnel forward with clever workflows, analytics, and seamless lead management — all in one immersive command center.</p>
       <div class="hero-actions" data-reveal style="--rd:300ms">
-        <a class="btn btn-primary" href="#cta" data-lead="signup">Start Free Right Now
+        <a class="btn btn-primary" href="sign-up.html">Start Free Right Now
           <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
-        <a class="btn btn-outline" href="#cta" data-lead="sales">Schedule a Consult</a>
+        <a class="btn btn-outline" href="contact.html">Schedule a Consult</a>
       </div>
     </div>
 
@@ -314,7 +307,7 @@ html.lenis,html.lenis body{height:auto}
         </div>
         <h3>The Dolphin Horizon Suite</h3>
         <p>Floor-to-ceiling windows overlooking the bay with private balcony access.</p>
-        <a class="btn btn-primary" href="#reserve" data-suite="Dolphin Horizon Suite">Reserve Suite</a>
+        <a class="btn btn-primary" href="suite-dolphin.html">Reserve Suite</a>
       </article>
       <article class="card suite" data-reveal style="--rd:120ms">
         <div class="suite-top">
@@ -323,7 +316,7 @@ html.lenis,html.lenis body{height:auto}
         </div>
         <h3>The Lighthouse Loft</h3>
         <p>Cozy aesthetic retreat featuring warm ambient lighting and rustic custom woodwork.</p>
-        <a class="btn btn-primary" href="#reserve" data-suite="Lighthouse Loft">Reserve Loft</a>
+        <a class="btn btn-primary" href="suite-lighthouse.html">Reserve Loft</a>
       </article>
     </div>
   </section>
@@ -384,7 +377,7 @@ html.lenis,html.lenis body{height:auto}
         <span class="eyebrow" data-reveal>Built for momentum</span>
         <h2 data-reveal style="--rd:90ms">See the whole funnel move in real time</h2>
         <p data-reveal style="--rd:180ms">Every stage, every signal, every dollar — rendered live. Ascend gives operators the altitude to spot what’s working and the controls to double down instantly.</p>
-        <a class="btn btn-primary" data-reveal style="--rd:270ms" href="#features">Explore the platform
+        <a class="btn btn-primary" data-reveal style="--rd:270ms" href="features.html">Explore the platform
           <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
       </div>
@@ -438,10 +431,10 @@ html.lenis,html.lenis body{height:auto}
       <h2 data-reveal style="--rd:140ms">Put your growth on a new trajectory</h2>
       <p data-reveal style="--rd:220ms">Launch in minutes. No credit card. Cancel anytime. Join thousands of teams compounding revenue on Ascend.</p>
       <div class="hero-actions" data-reveal style="--rd:300ms">
-        <a class="btn btn-primary" href="#cta" data-lead="signup">Start Free Right Now
+        <a class="btn btn-primary" href="sign-up.html">Start Free Right Now
           <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
-        <a class="btn btn-outline" href="#cta" data-lead="sales">Talk to Sales</a>
+        <a class="btn btn-outline" href="contact.html">Talk to Sales</a>
       </div>
     </div>
 
@@ -451,9 +444,9 @@ html.lenis,html.lenis body{height:auto}
         <p>The revenue command center for ambitious teams.</p>
       </div>
       <div class="footer-cols">
-        <div class="footer-col"><h4>Product</h4><a href="#features">Features</a><a href="#solutions">Solutions</a><a href="#cta">Plans</a></div>
-        <div class="footer-col"><h4>Company</h4><a href="#top">About</a><a href="#top">Careers</a><a href="#top">Blog</a></div>
-        <div class="footer-col"><h4>Legal</h4><a href="#top">Privacy</a><a href="#top">Terms</a><a href="#top">Security</a></div>
+        <div class="footer-col"><h4>Product</h4><a href="features.html">Features</a><a href="solutions.html">Solutions</a><a href="plans.html">Plans</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="about.html">About</a><a href="careers.html">Careers</a><a href="blog.html">Blog</a></div>
+        <div class="footer-col"><h4>Legal</h4><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="security.html">Security</a></div>
       </div>
     </footer>
 
@@ -1104,36 +1097,6 @@ try {
 }
 </script>
 
-<dialog id="lead-dialog" class="lead-dialog" aria-labelledby="lead-title">
-  <div class="lead-head">
-    <h3 id="lead-title">Start free on Ascend</h3>
-    <button type="button" class="lead-close" id="lead-close" aria-label="Close">×</button>
-  </div>
-  <form id="lead-form" class="lead-form" novalidate>
-    <input type="hidden" name="intent" id="lead-intent" value="signup" />
-    <label class="field">
-      <span>Full name</span>
-      <input type="text" name="name" maxlength="120" required autocomplete="name" />
-    </label>
-    <label class="field">
-      <span>Work email</span>
-      <input type="email" name="email" maxlength="200" required autocomplete="email" />
-    </label>
-    <label class="field">
-      <span>Company (optional)</span>
-      <input type="text" name="company" maxlength="160" autocomplete="organization" />
-    </label>
-    <label class="field">
-      <span>How can we help? (optional)</span>
-      <textarea name="message" maxlength="1000" rows="3"></textarea>
-    </label>
-    <div class="form-foot">
-      <p class="form-status" id="lead-status" role="status"></p>
-      <button class="btn btn-primary" type="submit" id="lead-submit">Send</button>
-    </div>
-  </form>
-</dialog>
-
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -1230,53 +1193,6 @@ form.addEventListener('submit', async (e) => {
 });
 
 loadAvailability();
-
-const leadDialog = document.getElementById('lead-dialog');
-const leadForm = document.getElementById('lead-form');
-const leadStatus = document.getElementById('lead-status');
-const leadSubmit = document.getElementById('lead-submit');
-const leadIntent = document.getElementById('lead-intent');
-const leadTitle = document.getElementById('lead-title');
-const LEAD_TITLES = { signup: 'Start free on Ascend', sales: 'Talk to our team' };
-
-document.querySelectorAll('[data-lead]').forEach((el) => {
-  el.addEventListener('click', (e) => {
-    e.preventDefault();
-    leadIntent.value = el.dataset.lead;
-    leadTitle.textContent = LEAD_TITLES[el.dataset.lead];
-    leadStatus.textContent = sb ? '' : 'Sign-up is not connected yet. Please try again later.';
-    leadStatus.className = sb ? 'form-status' : 'form-status err';
-    leadSubmit.disabled = !sb;
-    leadDialog.showModal();
-  });
-});
-
-document.getElementById('lead-close').addEventListener('click', () => leadDialog.close());
-leadDialog.addEventListener('click', (e) => { if (e.target === leadDialog) leadDialog.close(); });
-
-leadForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!sb || !leadForm.reportValidity()) return;
-  leadSubmit.disabled = true;
-  setLeadStatus('Sending…');
-  const fd = new FormData(leadForm);
-  const { error } = await sb.from('leads').insert({
-    intent: fd.get('intent'),
-    name: fd.get('name').trim(),
-    email: fd.get('email').trim(),
-    company: (fd.get('company') || '').trim() || null,
-    message: (fd.get('message') || '').trim() || null,
-  });
-  leadSubmit.disabled = false;
-  if (error) { setLeadStatus('Something went wrong. Please try again.', 'err'); return; }
-  leadForm.reset();
-  setLeadStatus('Thanks. We will be in touch shortly.', 'ok');
-});
-
-function setLeadStatus(msg, kind = '') {
-  leadStatus.textContent = msg;
-  leadStatus.className = `form-status ${kind}`;
-}
 </script>
 <script type="module">
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
