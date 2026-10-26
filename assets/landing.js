@@ -144,20 +144,29 @@ renderer.setClearColor(0x000000, 0);
 
 const heroScene = new THREE.Scene();
 const heroCam = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
-heroCam.position.set(0, 0, 9);
+const GLOBE_RADIUS = 1.7;
+const NEAR_DIST = 2.15;
+const HERO_PIVOT_Y = -1.6;
+const farDist = () => Math.max(10.8, (GLOBE_RADIUS * 1.2) / (Math.tan(THREE.MathUtils.degToRad(17.5)) * heroCam.aspect));
+const globeState = { yaw: 0, pitch: 0, zoom: 0, zoomTarget: 0, targetYaw: null, targetPitch: null, dragging: false, lastX: 0, lastY: 0 };
+const applyZoom = () => {
+  heroCam.position.set(0, 0, THREE.MathUtils.lerp(farDist(), NEAR_DIST, globeState.zoom));
+  heroCam.lookAt(0, 0, 0);
+};
+applyZoom();
 
 const sun = new THREE.DirectionalLight(0xffffff, 2.1);
 sun.position.set(-6, 3, 6);
 heroScene.add(sun);
-heroScene.add(new THREE.AmbientLight(0xffffff, 0.45));
+heroScene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
 const earth = new THREE.Mesh(
-  new THREE.SphereGeometry(2.4, 128, 128),
+  new THREE.SphereGeometry(GLOBE_RADIUS, 256, 256),
   new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0 })
 );
 earth.visible = false;
 const atmosphere = new THREE.Mesh(
-  new THREE.SphereGeometry(2.52, 96, 96),
+  new THREE.SphereGeometry(GLOBE_RADIUS * 1.06, 128, 128),
   new THREE.ShaderMaterial({
     transparent: true,
     depthWrite: false,
@@ -179,8 +188,7 @@ const atmosphere = new THREE.Mesh(
 );
 const globe = new THREE.Group();
 globe.add(earth, atmosphere);
-globe.position.set(0, -3.4, 0);
-globe.rotation.z = 0.41;
+globe.position.set(0, HERO_PIVOT_Y, 0);
 heroScene.add(globe);
 
 earthPromise.then((canvas) => {
@@ -197,10 +205,59 @@ const onHeroResize = () => {
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   heroCam.aspect = window.innerWidth / window.innerHeight;
   heroCam.updateProjectionMatrix();
+  applyZoom();
 };
 window.addEventListener('resize', onHeroResize);
 
-const sanctuary = document.getElementById('sanctuary');
+const heroEl = document.querySelector('.hero');
+heroEl.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('a,button') || window.scrollY > 40) return;
+  globeState.dragging = true;
+  globeState.targetYaw = null;
+  globeState.targetPitch = null;
+  globeState.lastX = e.clientX;
+  globeState.lastY = e.clientY;
+  heroEl.setPointerCapture(e.pointerId);
+});
+heroEl.addEventListener('pointermove', (e) => {
+  if (!globeState.dragging) return;
+  const dx = e.clientX - globeState.lastX;
+  const dy = e.clientY - globeState.lastY;
+  globeState.lastX = e.clientX;
+  globeState.lastY = e.clientY;
+  globeState.yaw += dx * 0.005;
+  globeState.pitch = clamp(globeState.pitch + dy * 0.005, -1.2, 1.2);
+});
+const endGlobeDrag = () => { globeState.dragging = false; };
+heroEl.addEventListener('pointerup', endGlobeDrag);
+heroEl.addEventListener('pointercancel', endGlobeDrag);
+heroEl.addEventListener('wheel', (e) => {
+  if (window.scrollY > 40) return;
+  const gs = globeState;
+  if ((e.deltaY > 0 && gs.zoomTarget < 1) || (e.deltaY < 0 && gs.zoomTarget > 0)) {
+    e.preventDefault();
+    gs.zoomTarget = clamp(gs.zoomTarget + Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY) / 600, 0.15), 0, 1);
+  }
+}, { passive: false });
+
+const gStatus = document.getElementById('globe-status');
+document.getElementById('globe-in').addEventListener('click', () => { globeState.zoomTarget = clamp(globeState.zoomTarget + 0.2, 0, 1); });
+document.getElementById('globe-out').addEventListener('click', () => { globeState.zoomTarget = clamp(globeState.zoomTarget - 0.2, 0, 1); });
+document.getElementById('globe-locate').addEventListener('click', () => {
+  if (!navigator.geolocation) { gStatus.textContent = 'Location is not available in this browser.'; return; }
+  gStatus.textContent = 'Finding your location…';
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const { latitude, longitude } = pos.coords;
+    globeState.targetYaw = Math.PI / 2 - THREE.MathUtils.degToRad(longitude + 180);
+    globeState.targetPitch = THREE.MathUtils.degToRad(latitude);
+    globeState.zoomTarget = 0.7;
+    gStatus.textContent = `You are here: ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+  }, () => {
+    gStatus.textContent = 'Location permission was not granted.';
+  }, { enableHighAccuracy: false, timeout: 10000 });
+});
+
+const sanctuary = document.getElementById('features');
 const sceneSections = [...document.querySelectorAll('[data-scene]')];
 const dunesCanvas = document.getElementById('dunes');
 
@@ -366,7 +423,28 @@ const parallax = [...document.querySelectorAll('[data-parallax]')];
 let mix = 0;
 let t = 0;
 let last = performance.now() / 1000;
-let spin = 0;
+const heroText = document.querySelectorAll('.hero-inner, .logos');
+const updateGlobe = (dt) => {
+  const gs = globeState;
+  gs.zoom += (gs.zoomTarget - gs.zoom) * Math.min(1, dt * 5);
+  if (gs.targetYaw !== null) {
+    const dy = Math.atan2(Math.sin(gs.targetYaw - gs.yaw), Math.cos(gs.targetYaw - gs.yaw));
+    gs.yaw += dy * Math.min(1, dt * 2.5);
+    gs.pitch += (gs.targetPitch - gs.pitch) * Math.min(1, dt * 2.5);
+    if (Math.abs(dy) < 0.002 && Math.abs(gs.targetPitch - gs.pitch) < 0.002) {
+      gs.yaw = gs.targetYaw;
+      gs.pitch = gs.targetPitch;
+      gs.targetYaw = null;
+      gs.targetPitch = null;
+    }
+  } else if (!gs.dragging && !reduced) {
+    gs.yaw += dt * 0.06;
+  }
+  globe.rotation.set(gs.pitch, gs.yaw, 0);
+  globe.position.y = THREE.MathUtils.lerp(HERO_PIVOT_Y, 0, gs.zoom);
+  heroText.forEach((el) => { el.style.opacity = (1 - gs.zoom * 0.9).toFixed(3); });
+  applyZoom();
+};
 
 const frame = () => {
   const now = performance.now() / 1000;
@@ -408,8 +486,7 @@ const frame = () => {
   if (mix > 0.01) duneRenderer.render(duneScene, duneCam);
 
   if (window.__planetOpacity !== 0) {
-    if (!reduced) spin += dt * 0.04;
-    globe.rotation.y = spin;
+    updateGlobe(dt);
     renderer.render(heroScene, heroCam);
   }
 

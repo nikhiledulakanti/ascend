@@ -27,7 +27,7 @@
 
 <div class="page" id="top">
 
-  <header class="hero">
+  <header class="hero" data-lenis-prevent>
     <nav class="nav">
       <a class="brand" href="index.html"><span class="brand-mark">▲</span>Ascend</a>
       <div class="nav-links">
@@ -60,6 +60,16 @@
         <span class="logo">Helod</span>
         <span class="logo">Vertx</span>
       </div>
+    </div>
+
+    <div class="globe-hud">
+      <p class="globe-hint">Drag to rotate · Scroll to zoom into orbit</p>
+      <div class="globe-buttons">
+        <button type="button" id="globe-out" aria-label="Zoom out globe">−</button>
+        <button type="button" id="globe-in" aria-label="Zoom in globe">+</button>
+        <button type="button" id="globe-locate">Find my location</button>
+      </div>
+      <p class="globe-status" id="globe-status" role="status"></p>
     </div>
   </header>
 

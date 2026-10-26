@@ -11,6 +11,30 @@ const money = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const isoDate = (d) => d.toISOString().slice(0, 10);
 const todayIso = isoDate(new Date());
 
+if (!document.getElementById('planet') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const bar = document.createElement('div');
+  bar.className = 'scroll-progress';
+  bar.setAttribute('aria-hidden', 'true');
+  document.body.prepend(bar);
+  const targets = $$('.card, .job, .post, .form, .table-wrap, .calc > *, .section-head, .page-hero > *, .prose > *, .footer-grid > *, .notice');
+  targets.forEach((el, i) => {
+    el.setAttribute('data-reveal', '');
+    el.style.setProperty('--rd', `${(i % 4) * 90}ms`);
+  });
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('in'); revealObserver.unobserve(e.target); }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -6% 0px' });
+  targets.forEach((el) => revealObserver.observe(el));
+  const updateProgress = () => {
+    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    bar.style.transform = `scaleX(${window.scrollY / max})`;
+  };
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+}
+
 const setStatus = (el, msg, kind = '') => {
   if (!el) return;
   el.textContent = msg;
