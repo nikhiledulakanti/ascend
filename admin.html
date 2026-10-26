@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Staff console | Ascend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/site.css" />
+<style>
+.console{display:grid;gap:22px;margin-top:8px}
+.toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:end;justify-content:space-between}
+.toolbar .field select,.toolbar .field input{min-width:170px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.kpi{padding:20px;border-radius:var(--radius);background:var(--glass);border:1px solid var(--line)}
+.kpi .v{font-size:26px;font-weight:800;margin-top:6px}
+.kpi .l{font-size:13px;color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:4px;height:120px;padding:12px;border-radius:14px;background:rgba(20,40,90,.04);border:1px solid var(--line)}
+.bars div{flex:1;background:linear-gradient(180deg,var(--accent),rgba(11,143,98,.25));border-radius:4px 4px 2px 2px;min-height:2px}
+.data{width:100%;border-collapse:collapse;font-size:14px}
+.data th,.data td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.data th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.table-wrap{overflow-x:auto}
+.actions button{font:inherit;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);cursor:pointer;margin:2px}
+.actions button:disabled{opacity:.4;cursor:not-allowed}
+.pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(20,40,90,.07)}
+.muted{color:var(--muted);font-size:14px}
+@media (max-width:980px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header class="site-nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="brand-mark">▲</span>Ascend</a>
+    <span class="eyebrow" style="margin:0">Staff console</span>
+    <button class="btn btn-outline" id="sign-out" type="button" hidden style="padding:9px 16px">Sign out</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="crumbs"><a href="index.html">Home</a> / Staff console</p>
+
+  <section class="page-hero" id="config-notice" hidden>
+    <h1>Not connected</h1>
+    <p class="lead">Add your Supabase project URL and publishable key to <code>assets/config.js</code> to use the staff console.</p>
+  </section>
+
+  <section class="page-hero" id="signin" hidden>
+    <span class="eyebrow">Sign in</span>
+    <h1>Staff sign-in</h1>
+    <p class="lead">Enter your work email. We'll send you a one-time sign-in link. Access is limited to staff linked to a client.</p>
+    <form class="form" id="signin-form" novalidate style="grid-template-columns:1fr;max-width:520px;margin-top:24px">
+      <label class="field">
+        <span>Work email</span>
+        <input type="email" name="email" required autocomplete="email" maxlength="200" />
+      </label>
+      <div class="form-foot">
+        <p class="status" id="signin-status" role="status"></p>
+        <button class="btn btn-primary" type="submit" id="signin-submit">Send sign-in link</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="section console" id="console" hidden>
+    <div class="toolbar">
+      <div class="controls" style="margin:0">
+        <label class="field"><span>Client</span><select id="org-select"></select></label>
+        <label class="field"><span>From</span><input type="date" id="range-from" /></label>
+        <label class="field"><span>To</span><input type="date" id="range-to" /></label>
+      </div>
+      <p class="status" id="console-status" role="status"></p>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="l">Occupancy</div><div class="v" id="kpi-occupancy">—</div></div>
+      <div class="kpi"><div class="l">Revenue</div><div class="v" id="kpi-revenue">—</div></div>
+      <div class="kpi"><div class="l">Nights booked</div><div class="v" id="kpi-nights">—</div></div>
+      <div class="kpi"><div class="l">Bookings</div><div class="v" id="kpi-bookings">—</div></div>
+      <div class="kpi"><div class="l">New leads</div><div class="v" id="kpi-leads">—</div></div>
+    </div>
+
+    <div class="card">
+      <h3>Nightly occupancy</h3>
+      <div class="bars" id="daily-bars" role="img" aria-label="Nightly occupancy chart" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card">
+      <h3>Reservations</h3>
+      <div class="table-wrap" style="margin-top:12px">
+        <table class="data">
+          <thead><tr><th>Guest</th><th>Suite</th><th>Dates</th><th>Guests</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="reservations-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Customers</h3>
+      <div class="table-wrap" style="margin-top:12px">
+        <table class="data">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Since</th></tr></thead>
+          <tbody id="customers-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Leads</h3>
+      <div class="table-wrap" style="margin-top:12px">
+        <table class="data">
+          <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Intent</th><th>Status</th><th>Received</th></tr></thead>
+          <tbody id="leads-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p class="copy">© <span id="year"></span> Ascend, Inc. Data shown here is visible only to signed-in staff.</p>
+  </div>
+</footer>
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script type="module" src="assets/admin.js"></script>
+</body>
+</html>

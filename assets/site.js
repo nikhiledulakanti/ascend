@@ -1,7 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, ORG_SLUG } from './config.js';
 
-const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR-PUBLISHABLE-KEY';
 const configured = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR-PUBLISHABLE');
 const sb = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
@@ -153,7 +152,7 @@ if (careersRoot) {
 
 async function loadBookings() {
   if (!sb) return [];
-  const { data, error } = await sb.from('suite_availability').select('suite, check_in, check_out');
+  const { data, error } = await sb.rpc('public_suite_availability', { p_org: ORG_SLUG });
   return error ? null : data;
 }
 
@@ -225,20 +224,24 @@ if (reserveForm) {
     submit.disabled = true;
     setStatus(status, 'Sending your request…');
     const fd = new FormData(reserveForm);
-    const { error } = await sb.from('reservations').insert({
-      suite: fd.get('suite'),
-      check_in: fd.get('check_in'),
-      check_out: fd.get('check_out'),
-      guests: Number(fd.get('guests')),
-      guest_name: fd.get('guest_name').trim(),
-      email: fd.get('email').trim(),
-      phone: (fd.get('phone') || '').trim() || null,
+    const { error } = await sb.rpc('submit_reservation', {
+      p_org: ORG_SLUG,
+      p_suite: fd.get('suite'),
+      p_check_in: fd.get('check_in'),
+      p_check_out: fd.get('check_out'),
+      p_guests: Number(fd.get('guests')),
+      p_name: fd.get('guest_name').trim(),
+      p_email: fd.get('email').trim(),
+      p_phone: (fd.get('phone') || '').trim() || null,
     });
     submit.disabled = false;
     if (error) {
-      setStatus(status, error.code === '23P01'
+      const message = error.code === '23P01'
         ? 'Those dates were just booked. Please choose different dates.'
-        : 'Something went wrong. Please try again or contact the team.', 'err');
+        : error.code === '53400' || error.code === '22023'
+          ? error.message
+          : 'Something went wrong. Please try again or contact the team.';
+      setStatus(status, message, 'err');
       if (error.code === '23P01') booked = (await loadBookings()) || booked;
       return;
     }
@@ -259,15 +262,19 @@ if (leadForm) {
     submit.disabled = true;
     setStatus(status, 'Sending…');
     const fd = new FormData(leadForm);
-    const { error } = await sb.from('leads').insert({
-      intent: leadForm.dataset.leadForm,
-      name: fd.get('name').trim(),
-      email: fd.get('email').trim(),
-      company: (fd.get('company') || '').trim() || null,
-      message: (fd.get('message') || '').trim() || null,
+    const { error } = await sb.rpc('submit_lead', {
+      p_org: ORG_SLUG,
+      p_intent: leadForm.dataset.leadForm,
+      p_name: fd.get('name').trim(),
+      p_email: fd.get('email').trim(),
+      p_company: (fd.get('company') || '').trim() || null,
+      p_message: (fd.get('message') || '').trim() || null,
     });
     submit.disabled = false;
-    if (error) { setStatus(status, 'Something went wrong. Please try again.', 'err'); return; }
+    if (error) {
+      setStatus(status, error.code === '53400' ? error.message : 'Something went wrong. Please try again.', 'err');
+      return;
+    }
     leadForm.reset();
     setStatus(status, 'Thanks. We will be in touch shortly.', 'ok');
   });
