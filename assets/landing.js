@@ -144,7 +144,8 @@ renderer.setClearColor(0x000000, 0);
 
 const heroScene = new THREE.Scene();
 const heroCam = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
-const farDist = () => Math.max(10.8, (GLOBE_RADIUS * 1.2) / (Math.tan(deg(17.5)) * heroCam.aspect));
+const isNarrow = () => window.innerWidth < 900;
+const farDist = () => (isNarrow() ? 16 : Math.max(10.8, (GLOBE_RADIUS * 1.2) / (Math.tan(deg(17.5)) * heroCam.aspect)));
 const globeState = {
   yaw: 0, pitch: 0, zoom: 0, zoomTarget: 0,
   targetYaw: null, targetPitch: null,
@@ -217,9 +218,15 @@ const onHeroResize = () => {
 };
 window.addEventListener('resize', onHeroResize);
 
-const heroText = document.querySelectorAll('.hero-inner, .logos');
+const heroText = document.querySelectorAll('.hero-title, .hero-sub, .hero-actions, .logos');
 const gStatus = document.getElementById('globe-status');
 const mapCredit = document.getElementById('map-credit');
+
+const heroLayout = () => {
+  if (isNarrow()) return { x: 0, y: -4.1 };
+  const halfW = farDist() * Math.tan(deg(17.5)) * heroCam.aspect;
+  return { x: 0.22 * 2 * halfW, y: 0 };
+};
 
 const updateGlobe = (dt) => {
   const gs = globeState;
@@ -238,7 +245,8 @@ const updateGlobe = (dt) => {
     gs.yaw += dt * 0.06;
   }
   globe.rotation.set(gs.pitch, gs.yaw, 0);
-  globe.position.y = THREE.MathUtils.lerp(HERO_PIVOT_Y, 0, globeZoom());
+  const layout = heroLayout();
+  globe.position.set(THREE.MathUtils.lerp(layout.x, 0, globeZoom()), THREE.MathUtils.lerp(layout.y, 0, globeZoom()), 0);
   if (gs.zoom <= 1 && gs.targetYaw === null) {
     gs.mapLat = clamp(THREE.MathUtils.radToDeg(gs.pitch), -85, 85);
     gs.mapLon = normLon(THREE.MathUtils.radToDeg(Math.PI / 2 - gs.yaw) - 180);

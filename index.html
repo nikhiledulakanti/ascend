@@ -49,6 +49,20 @@
         </a>
         <a class="btn btn-outline" href="contact.html">Schedule a Consult</a>
       </div>
+
+      <div class="globe-hud">
+        <p class="globe-hint">Drag to rotate · Scroll to zoom · Double-click any place</p>
+        <form class="place-form" id="place-form" role="search">
+          <input type="search" id="place-input" maxlength="120" placeholder="Search a city, address or place" aria-label="Search a place" />
+          <button type="submit">Go</button>
+        </form>
+        <div class="globe-buttons">
+          <button type="button" id="globe-out" aria-label="Zoom out globe">−</button>
+          <button type="button" id="globe-in" aria-label="Zoom in globe">+</button>
+          <button type="button" id="globe-locate">Find my location</button>
+        </div>
+        <p class="globe-status" id="globe-status" role="status"></p>
+      </div>
     </div>
 
     <div class="logos" data-reveal style="--rd:420ms">
@@ -63,19 +77,6 @@
       </div>
     </div>
 
-    <div class="globe-hud">
-      <p class="globe-hint">Drag to rotate · Scroll to zoom · Double-click any place</p>
-      <form class="place-form" id="place-form" role="search">
-        <input type="search" id="place-input" maxlength="120" placeholder="Search a city, address or place" aria-label="Search a place" />
-        <button type="submit">Go</button>
-      </form>
-      <div class="globe-buttons">
-        <button type="button" id="globe-out" aria-label="Zoom out globe">−</button>
-        <button type="button" id="globe-in" aria-label="Zoom in globe">+</button>
-        <button type="button" id="globe-locate">Find my location</button>
-      </div>
-      <p class="globe-status" id="globe-status" role="status"></p>
-    </div>
     <p class="map-credit" id="map-credit"><span id="map-status"></span> · Imagery © Esri, Maxar, Earthstar Geographics and contributors</p>
   </header>
 
@@ -311,6 +312,6 @@
 
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 <script type="module" src="assets/site.js"></script>
-<script type="module" src="assets/landing.js?v=4"></script>
+<script type="module" src="assets/landing.js?v=6"></script>
 </body>
 </html>
