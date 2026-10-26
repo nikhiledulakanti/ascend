@@ -4,13 +4,14 @@ import Lenis from 'https://unpkg.com/lenis@1.3.23/dist/lenis.mjs';
 const TIFF_URL = 'assets/earth/land_shallow_topo_8192.tif';
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const deg = THREE.MathUtils.degToRad;
+const normLon = (l) => ((l + 540) % 360 + 360) % 360 - 180;
 
 if (!reduced) {
   const lenis = new Lenis({ duration: 1.15, smoothWheel: true, touchMultiplier: 1.5 });
   const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
   requestAnimationFrame(raf);
 }
-
 
 const statusEl = document.getElementById('earth-status');
 const barEl = document.getElementById('earth-bar');
@@ -84,20 +85,6 @@ const resetView = () => {
   drawView();
 };
 
-viewCanvas.width = 1600;
-viewCanvas.height = 800;
-earthPromise.then((canvas) => {
-  if (!canvas) {
-    barWrap.hidden = true;
-    statusEl.textContent = 'The satellite image could not be loaded. Please refresh the page.';
-    return;
-  }
-  src = canvas;
-  resetView();
-  barWrap.hidden = true;
-  statusEl.textContent = `NASA Blue Marble, ${src.width} × ${src.height} px. Drag to pan, scroll to zoom.`;
-});
-
 let drag = null;
 viewCanvas.addEventListener('pointerdown', (e) => {
   if (!src) return;
@@ -127,6 +114,27 @@ document.getElementById('zoom-in').addEventListener('click', () => src && zoomAt
 document.getElementById('zoom-out').addEventListener('click', () => src && zoomAt(1.5));
 document.getElementById('zoom-reset').addEventListener('click', () => src && resetView());
 
+viewCanvas.width = 1600;
+viewCanvas.height = 800;
+earthPromise.then((canvas) => {
+  if (!canvas) {
+    barWrap.hidden = true;
+    statusEl.textContent = 'The satellite image could not be loaded. Please refresh the page.';
+    return;
+  }
+  src = canvas;
+  resetView();
+  barWrap.hidden = true;
+  statusEl.textContent = `NASA Blue Marble, ${src.width} × ${src.height} px. Drag to pan, scroll to zoom.`;
+});
+
+const GLOBE_RADIUS = 1.7;
+const NEAR_DIST = 2.15;
+const HERO_PIVOT_Y = -1.6;
+const MAX_ZOOM = 2;
+const MAP_MIN_Z = 3;
+const MAP_MAX_Z = 18;
+
 const heroCanvas = document.getElementById('planet');
 const renderer = new THREE.WebGLRenderer({ canvas: heroCanvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -136,13 +144,20 @@ renderer.setClearColor(0x000000, 0);
 
 const heroScene = new THREE.Scene();
 const heroCam = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
-const GLOBE_RADIUS = 1.7;
-const NEAR_DIST = 2.15;
-const HERO_PIVOT_Y = -1.6;
-const farDist = () => Math.max(10.8, (GLOBE_RADIUS * 1.2) / (Math.tan(THREE.MathUtils.degToRad(17.5)) * heroCam.aspect));
-const globeState = { yaw: 0, pitch: 0, zoom: 0, zoomTarget: 0, targetYaw: null, targetPitch: null, dragging: false, lastX: 0, lastY: 0 };
+const farDist = () => Math.max(10.8, (GLOBE_RADIUS * 1.2) / (Math.tan(deg(17.5)) * heroCam.aspect));
+const globeState = {
+  yaw: 0, pitch: 0, zoom: 0, zoomTarget: 0,
+  targetYaw: null, targetPitch: null,
+  dragging: false, lastX: 0, lastY: 0,
+  mapLat: 20, mapLon: 0,
+  mapDrag: null,
+};
+const globeZoom = () => Math.min(globeState.zoom, 1);
+const mapMix = () => clamp((globeState.zoom - 1) / 0.08, 0, 1);
+const mapZoomLevel = () => MAP_MIN_Z + clamp(globeState.zoom - 1, 0, 1) * (MAP_MAX_Z - MAP_MIN_Z);
+
 const applyZoom = () => {
-  heroCam.position.set(0, 0, THREE.MathUtils.lerp(farDist(), NEAR_DIST, globeState.zoom));
+  heroCam.position.set(0, 0, THREE.MathUtils.lerp(farDist(), NEAR_DIST, globeZoom()));
   heroCam.lookAt(0, 0, 0);
 };
 applyZoom();
@@ -198,60 +213,241 @@ const onHeroResize = () => {
   heroCam.aspect = window.innerWidth / window.innerHeight;
   heroCam.updateProjectionMatrix();
   applyZoom();
+  resizeMap();
 };
 window.addEventListener('resize', onHeroResize);
 
+const heroText = document.querySelectorAll('.hero-inner, .logos');
+const gStatus = document.getElementById('globe-status');
+const mapCredit = document.getElementById('map-credit');
+
+const updateGlobe = (dt) => {
+  const gs = globeState;
+  gs.zoom += (gs.zoomTarget - gs.zoom) * Math.min(1, dt * 5);
+  if (gs.targetYaw !== null) {
+    const dy = Math.atan2(Math.sin(gs.targetYaw - gs.yaw), Math.cos(gs.targetYaw - gs.yaw));
+    gs.yaw += dy * Math.min(1, dt * 2.5);
+    gs.pitch += (gs.targetPitch - gs.pitch) * Math.min(1, dt * 2.5);
+    if (Math.abs(dy) < 0.002 && Math.abs(gs.targetPitch - gs.pitch) < 0.002) {
+      gs.yaw = gs.targetYaw;
+      gs.pitch = gs.targetPitch;
+      gs.targetYaw = null;
+      gs.targetPitch = null;
+    }
+  } else if (!gs.dragging && !reduced && gs.zoom < 1) {
+    gs.yaw += dt * 0.06;
+  }
+  globe.rotation.set(gs.pitch, gs.yaw, 0);
+  globe.position.y = THREE.MathUtils.lerp(HERO_PIVOT_Y, 0, globeZoom());
+  if (gs.zoom <= 1) {
+    gs.mapLat = clamp(THREE.MathUtils.radToDeg(gs.pitch), -85, 85);
+    gs.mapLon = normLon(THREE.MathUtils.radToDeg(Math.PI / 2 - gs.yaw) - 180);
+  }
+  heroText.forEach((el) => { el.style.opacity = (1 - globeZoom() * 0.9).toFixed(3); });
+  applyZoom();
+};
+
+function goTo(lat, lon, zoomTarget) {
+  const gs = globeState;
+  gs.targetYaw = Math.PI / 2 - deg(lon + 180);
+  gs.targetPitch = deg(lat);
+  gs.mapLat = lat;
+  gs.mapLon = lon;
+  gs.zoomTarget = zoomTarget;
+  gs.dragging = false;
+}
+
 const heroEl = document.querySelector('.hero');
 heroEl.addEventListener('pointerdown', (e) => {
-  if (e.target.closest('a,button') || window.scrollY > 40) return;
-  globeState.dragging = true;
-  globeState.targetYaw = null;
-  globeState.targetPitch = null;
-  globeState.lastX = e.clientX;
-  globeState.lastY = e.clientY;
+  if (e.target.closest('a,button,input,form') || window.scrollY > 40) return;
+  const gs = globeState;
+  gs.dragging = true;
+  gs.targetYaw = null;
+  gs.targetPitch = null;
+  gs.lastX = e.clientX;
+  gs.lastY = e.clientY;
+  if (gs.zoom > 1) {
+    const z = mapZoomLevel();
+    gs.mapDrag = { cx: lonToX(gs.mapLon, z), cy: latToY(gs.mapLat, z), x: e.clientX, y: e.clientY, z };
+  }
   heroEl.setPointerCapture(e.pointerId);
 });
 heroEl.addEventListener('pointermove', (e) => {
-  if (!globeState.dragging) return;
-  const dx = e.clientX - globeState.lastX;
-  const dy = e.clientY - globeState.lastY;
-  globeState.lastX = e.clientX;
-  globeState.lastY = e.clientY;
-  globeState.yaw += dx * 0.005;
-  globeState.pitch = clamp(globeState.pitch + dy * 0.005, -1.2, 1.2);
+  const gs = globeState;
+  if (!gs.dragging) return;
+  if (gs.mapDrag) {
+    const { cx, cy, x, y, z } = gs.mapDrag;
+    gs.mapLon = xToLon(cx - (e.clientX - x), z);
+    gs.mapLat = clamp(yToLat(cy - (e.clientY - y), z), -85, 85);
+    return;
+  }
+  const dx = e.clientX - gs.lastX;
+  const dy = e.clientY - gs.lastY;
+  gs.lastX = e.clientX;
+  gs.lastY = e.clientY;
+  gs.yaw += dx * 0.005;
+  gs.pitch = clamp(gs.pitch + dy * 0.005, -1.2, 1.2);
 });
-const endGlobeDrag = () => { globeState.dragging = false; };
+const endGlobeDrag = () => { globeState.dragging = false; globeState.mapDrag = null; };
 heroEl.addEventListener('pointerup', endGlobeDrag);
 heroEl.addEventListener('pointercancel', endGlobeDrag);
+
 heroEl.addEventListener('wheel', (e) => {
   if (window.scrollY > 40) return;
   const gs = globeState;
-  if ((e.deltaY > 0 && gs.zoomTarget < 1) || (e.deltaY < 0 && gs.zoomTarget > 0)) {
+  if ((e.deltaY > 0 && gs.zoomTarget < MAX_ZOOM) || (e.deltaY < 0 && gs.zoomTarget > 0)) {
     e.preventDefault();
-    gs.zoomTarget = clamp(gs.zoomTarget + Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY) / 600, 0.15), 0, 1);
+    gs.zoomTarget = clamp(gs.zoomTarget + Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY) / 600, 0.15), 0, MAX_ZOOM);
   }
 }, { passive: false });
 
-const gStatus = document.getElementById('globe-status');
-document.getElementById('globe-in').addEventListener('click', () => { globeState.zoomTarget = clamp(globeState.zoomTarget + 0.2, 0, 1); });
-document.getElementById('globe-out').addEventListener('click', () => { globeState.zoomTarget = clamp(globeState.zoomTarget - 0.2, 0, 1); });
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+heroEl.addEventListener('dblclick', (e) => {
+  if (globeState.zoom > 1 || e.target.closest('a,button,input,form')) return;
+  const rect = heroCanvas.getBoundingClientRect();
+  ndc.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+  raycaster.setFromCamera(ndc, heroCam);
+  const hit = raycaster.intersectObject(earth, false)[0];
+  if (!hit) return;
+  const local = earth.worldToLocal(hit.point.clone());
+  const lat = THREE.MathUtils.radToDeg(Math.asin(clamp(local.y / GLOBE_RADIUS, -1, 1)));
+  const lon = normLon(THREE.MathUtils.radToDeg(Math.atan2(local.z, -local.x)) - 180);
+  goTo(lat, lon, 1.5);
+  gStatus.textContent = `Viewing ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+});
+
+document.getElementById('globe-in').addEventListener('click', () => {
+  globeState.zoomTarget = clamp(globeState.zoomTarget + 0.2, 0, MAX_ZOOM);
+});
+document.getElementById('globe-out').addEventListener('click', () => {
+  globeState.zoomTarget = clamp(globeState.zoomTarget - 0.2, 0, MAX_ZOOM);
+});
 document.getElementById('globe-locate').addEventListener('click', () => {
   if (!navigator.geolocation) { gStatus.textContent = 'Location is not available in this browser.'; return; }
   gStatus.textContent = 'Finding your location…';
   navigator.geolocation.getCurrentPosition((pos) => {
     const { latitude, longitude } = pos.coords;
-    globeState.targetYaw = Math.PI / 2 - THREE.MathUtils.degToRad(longitude + 180);
-    globeState.targetPitch = THREE.MathUtils.degToRad(latitude);
-    globeState.zoomTarget = 0.7;
-    gStatus.textContent = `You are here: ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+    goTo(latitude, longitude, 1.7);
+    gStatus.textContent = `You are here: ${latitude.toFixed(3)}, ${longitude.toFixed(3)}`;
   }, () => {
     gStatus.textContent = 'Location permission was not granted.';
   }, { enableHighAccuracy: false, timeout: 10000 });
 });
 
+const placeForm = document.getElementById('place-form');
+placeForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const q = document.getElementById('place-input').value.trim();
+  if (!q) return;
+  gStatus.textContent = 'Searching…';
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`, {
+      headers: { 'Accept-Language': 'en' },
+    });
+    const data = await res.json();
+    if (!data.length) { gStatus.textContent = 'No place found. Try a different search.'; return; }
+    goTo(parseFloat(data[0].lat), parseFloat(data[0].lon), 1.7);
+    gStatus.textContent = data[0].display_name.slice(0, 110);
+  } catch {
+    gStatus.textContent = 'Search is unavailable right now.';
+  }
+});
+
+const mapCanvas = document.getElementById('map-view');
+const mctx = mapCanvas.getContext('2d');
+const TILE = 256;
+const tileCache = new Map();
+let pendingTiles = 0;
+let mapW = 1;
+let mapH = 1;
+const tileUrl = (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+
+function getTile(z, x, y) {
+  const key = `${z}/${x}/${y}`;
+  let t = tileCache.get(key);
+  if (t) return t;
+  if (tileCache.size > 500) tileCache.delete(tileCache.keys().next().value);
+  const img = new Image();
+  img.decoding = 'async';
+  t = { img, ready: false, loadedAt: 0 };
+  tileCache.set(key, t);
+  pendingTiles++;
+  img.onload = () => { t.ready = true; t.loadedAt = performance.now(); pendingTiles--; };
+  img.onerror = () => { pendingTiles--; };
+  img.src = tileUrl(z, x, y);
+  return t;
+}
+
+const worldSize = (z) => TILE * Math.pow(2, z);
+const lonToX = (lon, z) => (lon + 180) / 360 * worldSize(z);
+const latToY = (lat, z) => (1 - Math.log(Math.tan(deg(lat)) + 1 / Math.cos(deg(lat))) / Math.PI) / 2 * worldSize(z);
+const xToLon = (x, z) => x / worldSize(z) * 360 - 180;
+const yToLat = (y, z) => THREE.MathUtils.radToDeg(Math.atan(Math.sinh(Math.PI * (1 - 2 * y / worldSize(z)))));
+
+function resizeMap() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  mapW = window.innerWidth;
+  mapH = window.innerHeight;
+  mapCanvas.width = mapW * dpr;
+  mapCanvas.height = mapH * dpr;
+  mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resizeMap();
+
+function drawFallback(z, x, y, dx, dy, size) {
+  if (z <= 0) return;
+  const pz = z - 1, px = x >> 1, py = y >> 1;
+  const parent = tileCache.get(`${pz}/${px}/${py}`);
+  if (!parent || !parent.ready) return;
+  mctx.drawImage(parent.img, (x & 1) * 128, (y & 1) * 128, 128, 128, dx, dy, size, size);
+}
+
+function drawTile(z, x, y, dx, dy, size, now) {
+  const t = getTile(z, x, y);
+  if (t.ready) {
+    const a = Math.min(1, (now - t.loadedAt) / 350);
+    if (a < 1) drawFallback(z, x, y, dx, dy, size);
+    mctx.globalAlpha = a;
+    mctx.drawImage(t.img, dx, dy, size, size);
+    mctx.globalAlpha = 1;
+  } else {
+    drawFallback(z, x, y, dx, dy, size);
+  }
+}
+
+function drawMap(now, opacity) {
+  mctx.clearRect(0, 0, mapW, mapH);
+  if (opacity <= 0.001) return;
+  const z = mapZoomLevel();
+  const tz = Math.min(MAP_MAX_Z, Math.floor(z));
+  const scale = Math.pow(2, z - tz);
+  const cx = lonToX(globeState.mapLon, z) * Math.pow(2, tz - z);
+  const cy = latToY(globeState.mapLat, z) * Math.pow(2, tz - z);
+  const left = cx - mapW / (2 * scale);
+  const top = cy - mapH / (2 * scale);
+  const n = Math.pow(2, tz);
+  const x0 = Math.floor(left / TILE), x1 = Math.floor((left + mapW / scale) / TILE);
+  const y0 = Math.floor(top / TILE), y1 = Math.floor((top + mapH / scale) / TILE);
+  mctx.globalAlpha = opacity;
+  for (let ty = Math.max(0, y0); ty <= Math.min(n - 1, y1); ty++) {
+    for (let tx = x0; tx <= x1; tx++) {
+      const wx = ((tx % n) + n) % n;
+      drawTile(tz, wx, ty, (tx * TILE - left) * scale, (ty * TILE - top) * scale, TILE * scale, now);
+    }
+  }
+  mctx.globalAlpha = 1;
+}
+
+const dunesCanvas = document.getElementById('dunes');
 const sanctuary = document.getElementById('features');
 const sceneSections = [...document.querySelectorAll('[data-scene]')];
-const dunesCanvas = document.getElementById('dunes');
+const duneRenderer = new THREE.WebGLRenderer({ canvas: dunesCanvas, antialias: false });
+duneRenderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 768 ? 1 : 1.5));
+duneRenderer.setSize(window.innerWidth, window.innerHeight, false);
+const duneScene = new THREE.Scene();
+const duneCam = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+duneCam.position.set(0, 20, 30);
 
 const PALETTES = {
   dawn:   { skyTop: '#8dbde6', skyHor: '#fbe9d2', sand: '#f2dcb9', shadow: '#cfae8a', mount: '#c9d8e8', sun: '#fff4dc', star: 0.0 },
@@ -300,13 +496,6 @@ float snoise(vec3 v){
   vec4 m = max(0.5 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0); m = m * m;
   return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
 }`;
-
-const duneRenderer = new THREE.WebGLRenderer({ canvas: dunesCanvas, antialias: false });
-duneRenderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 768 ? 1 : 1.5));
-duneRenderer.setSize(window.innerWidth, window.innerHeight, false);
-const duneScene = new THREE.Scene();
-const duneCam = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-duneCam.position.set(0, 20, 30);
 
 const seg = window.innerWidth < 768 ? 110 : 220;
 const terrainGeo = new THREE.PlaneGeometry(700, 600, seg, seg);
@@ -410,32 +599,11 @@ const onDuneResize = () => {
 window.addEventListener('resize', onDuneResize);
 
 const progressBar = document.querySelector('.scroll-progress');
+const mapStatus = document.getElementById('map-status');
 
 let mix = 0;
 let t = 0;
 let last = performance.now() / 1000;
-const heroText = document.querySelectorAll('.hero-inner, .logos');
-const updateGlobe = (dt) => {
-  const gs = globeState;
-  gs.zoom += (gs.zoomTarget - gs.zoom) * Math.min(1, dt * 5);
-  if (gs.targetYaw !== null) {
-    const dy = Math.atan2(Math.sin(gs.targetYaw - gs.yaw), Math.cos(gs.targetYaw - gs.yaw));
-    gs.yaw += dy * Math.min(1, dt * 2.5);
-    gs.pitch += (gs.targetPitch - gs.pitch) * Math.min(1, dt * 2.5);
-    if (Math.abs(dy) < 0.002 && Math.abs(gs.targetPitch - gs.pitch) < 0.002) {
-      gs.yaw = gs.targetYaw;
-      gs.pitch = gs.targetPitch;
-      gs.targetYaw = null;
-      gs.targetPitch = null;
-    }
-  } else if (!gs.dragging && !reduced) {
-    gs.yaw += dt * 0.06;
-  }
-  globe.rotation.set(gs.pitch, gs.yaw, 0);
-  globe.position.y = THREE.MathUtils.lerp(HERO_PIVOT_Y, 0, gs.zoom);
-  heroText.forEach((el) => { el.style.opacity = (1 - gs.zoom * 0.9).toFixed(3); });
-  applyZoom();
-};
 
 const frame = () => {
   const now = performance.now() / 1000;
@@ -470,17 +638,23 @@ const frame = () => {
   duneCam.lookAt(Math.sin(t * 0.1) * 3, 4, duneCam.position.z - 60);
   sky.position.copy(duneCam.position);
 
-  const planetOp = 1 - mix;
-  window.__planetOpacity = planetOp < 0.01 ? 0 : planetOp;
-  heroCanvas.style.opacity = planetOp.toFixed(3);
+  updateGlobe(dt);
+  const mapOpacity = mapMix() * (1 - mix);
+  const globeOpacity = (1 - mix) * (1 - mapMix());
+  window.__planetOpacity = globeOpacity < 0.01 ? 0 : globeOpacity;
+  heroCanvas.style.opacity = globeOpacity.toFixed(3);
+  mapCanvas.style.opacity = mapOpacity.toFixed(3);
   dunesCanvas.style.opacity = mix.toFixed(3);
+  mapCredit.style.opacity = mapOpacity.toFixed(3);
   if (mix > 0.01) duneRenderer.render(duneScene, duneCam);
+  if (window.__planetOpacity !== 0) renderer.render(heroScene, heroCam);
 
-  if (window.__planetOpacity !== 0) {
-    updateGlobe(dt);
-    renderer.render(heroScene, heroCam);
+  if (mapOpacity > 0.001) {
+    drawMap(performance.now(), 1);
+    mapStatus.textContent = pendingTiles > 0 ? `Loading imagery… ${pendingTiles} tiles` : `Zoom ${mapZoomLevel().toFixed(1)} · ${globeState.mapLat.toFixed(3)}, ${globeState.mapLon.toFixed(3)}`;
+  } else {
+    mctx.clearRect(0, 0, mapW, mapH);
   }
-
 
   requestAnimationFrame(frame);
 };

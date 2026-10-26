@@ -23,6 +23,7 @@
 <body>
 <canvas id="planet" aria-hidden="true"></canvas>
 <canvas id="dunes" aria-hidden="true"></canvas>
+<canvas id="map-view" aria-hidden="true"></canvas>
 <div class="scroll-progress" aria-hidden="true"></div>
 
 <div class="page" id="top">
@@ -63,7 +64,11 @@
     </div>
 
     <div class="globe-hud">
-      <p class="globe-hint">Drag to rotate · Scroll to zoom into orbit</p>
+      <p class="globe-hint">Drag to rotate · Scroll to zoom · Double-click any place</p>
+      <form class="place-form" id="place-form" role="search">
+        <input type="search" id="place-input" maxlength="120" placeholder="Search a city, address or place" aria-label="Search a place" />
+        <button type="submit">Go</button>
+      </form>
       <div class="globe-buttons">
         <button type="button" id="globe-out" aria-label="Zoom out globe">−</button>
         <button type="button" id="globe-in" aria-label="Zoom in globe">+</button>
@@ -71,6 +76,7 @@
       </div>
       <p class="globe-status" id="globe-status" role="status"></p>
     </div>
+    <p class="map-credit" id="map-credit"><span id="map-status"></span> · Imagery © Esri, Maxar, Earthstar Geographics and contributors</p>
   </header>
 
   <section class="section" id="earth">
